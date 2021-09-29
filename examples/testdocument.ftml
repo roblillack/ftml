@@ -20,7 +20,7 @@
 
 <ul>
   <li>
-    <p><b>Bold</b> text.</p>
+    <p> <b>Bold</b> text.</p>
   </li>
   <li>
     <p><i>Italic</i> text.</p>
@@ -83,8 +83,7 @@
     <li>
       <p>This bullet points contains another quote:</p>
       <blockquote>
-        <p>You can never have enough nesting of paragraphs.
-—Robert Lillack</p>
+        <p>You can never have enough nesting of paragraphs.<br/>—Robert Lillack</p>
       </blockquote>
     </li>
     <li>

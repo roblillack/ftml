@@ -218,6 +218,11 @@ func readContent(z *gockl.Tokenizer, endToken string) ([]Span, error) {
 			return res, nil
 		}
 
+		if t, ok := token.(gockl.EmptyElementToken); ok && t.Name() == "br" {
+			res = append(res, Span{Text: "\n"})
+			continue
+		}
+
 		t, ok := token.(gockl.StartElementToken)
 		if !ok {
 			return res, fmt.Errorf("unexpected token type: %v", token)

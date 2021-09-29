@@ -94,6 +94,11 @@ func writeParagraph(w io.Writer, p *ftml.Paragraph, linePrefix string, followPre
 		}
 
 		for _, c := range p.Content {
+			if c.Text == "\n" {
+				if _, err := io.WriteString(w, " \\\n"+prefix); err != nil {
+					return err
+				}
+			}
 			if err := writeSpan(w, c); err != nil {
 				return err
 			}

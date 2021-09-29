@@ -38,7 +38,7 @@ func (s InlineStyle) String() string {
 		return "code"
 	}
 
-	panic("Unknwon Inline Style")
+	panic("Unknown Inline Style")
 }
 
 type Span struct {

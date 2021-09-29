@@ -30,7 +30,7 @@ func (t ParagraphType) String() string {
 		return "Quote"
 	}
 
-	panic("Unknwon Paragraph Type")
+	panic("Unknown Paragraph Type")
 }
 
 type Paragraph struct {
