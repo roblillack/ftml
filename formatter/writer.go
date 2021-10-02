@@ -16,13 +16,15 @@ func Write(w io.Writer, d *ftml.Document) error {
 
 const WrapWidth = 72
 
+// As per ECMA-48, 5th edition:
+// https://www.ecma-international.org/wp-content/uploads/ECMA-48_5th_edition_june_1991.pdf
 var styleTags = map[ftml.InlineStyle]struct{ B, E string }{
-	ftml.StyleBold:      {"", ""},
-	ftml.StyleItalic:    {"", ""},
-	ftml.StyleHighlight: {"", ""},
-	ftml.StyleUnderline: {"", ""},
+	ftml.StyleBold:      {"\033[1m", "\033[22m"},
+	ftml.StyleItalic:    {"\033[3m", "\033[23m"},
+	ftml.StyleHighlight: {"\033[7m", "\033[27m"},
+	ftml.StyleUnderline: {"\033[4m", "\033[24m"},
 	ftml.StyleCode:      {"", ""},
-	ftml.StyleStrike:    {"", ""},
+	ftml.StyleStrike:    {"\033[9m", "\033[29m"},
 }
 
 func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (int, error) {
@@ -34,21 +36,60 @@ func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (in
 	}
 
 	if span.Style == ftml.StyleNone {
-		words := strings.Fields(span.Text)
+		for pos := 0; pos < len(span.Text); {
+			for ws := pos; ws < len(span.Text); ws++ {
+				if !strings.ContainsRune(" \t\n", rune(span.Text[ws])) {
+					break
+				}
+				if _, err := io.WriteString(w, string(span.Text[ws])); err != nil {
+					return length, err
+				}
+				length++
+				pos++
+			}
+			if pos >= len(span.Text) {
+				break
+			}
 
-		for _, word := range words {
+			nextWs := strings.IndexAny(span.Text[pos:], " \t\n")
+			if nextWs == -1 {
+				if _, err := io.WriteString(w, span.Text[pos:]); err != nil {
+					return length, err
+				}
+				length += len([]rune(span.Text[pos:]))
+				break
+			}
+
+			word := span.Text[pos : pos+nextWs]
 			wordLen := len([]rune(word))
-			if wordLen+length > WrapWidth {
+			if length+wordLen > WrapWidth {
 				if _, err := io.WriteString(w, "\n"+followPrefix); err != nil {
 					return length, err
 				}
 				length = len([]rune(followPrefix))
 			}
-			if _, err := io.WriteString(w, word+" "); err != nil {
+
+			if _, err := io.WriteString(w, word); err != nil {
 				return length, err
 			}
-			length += wordLen + 1
+			length += wordLen
+			pos += nextWs
 		}
+
+		// words := strings.Fields(span.Text)
+		// for _, word := range words {
+		// 	wordLen := len([]rune(word))
+		// 	if wordLen+length > WrapWidth {
+		// 		if _, err := io.WriteString(w, "\n"+followPrefix); err != nil {
+		// 			return length, err
+		// 		}
+		// 		length = len([]rune(followPrefix))
+		// 	}
+		// 	if _, err := io.WriteString(w, word+" "); err != nil {
+		// 		return length, err
+		// 	}
+		// 	length += wordLen + 1
+		// }
 	} else {
 		for _, child := range span.Children {
 			l, err := writeSpan(w, child, length, followPrefix)
@@ -142,7 +183,7 @@ func writeParagraph(w io.Writer, p *ftml.Paragraph, linePrefix string, followPre
 					return err
 				}
 			}
-			if err := writeParagraphs(w, entry, linePrefix+"- ", followPrefix+"  "); err != nil {
+			if err := writeParagraphs(w, entry, linePrefix+" - ", followPrefix+"   "); err != nil {
 				return err
 			}
 			linePrefix = followPrefix
@@ -170,7 +211,7 @@ func writeParagraph(w io.Writer, p *ftml.Paragraph, linePrefix string, followPre
 	}
 
 	if p.Type == ftml.QuoteParagraph {
-		if err := writeParagraphs(w, p.Children, linePrefix+"> ", followPrefix+"> "); err != nil {
+		if err := writeParagraphs(w, p.Children, linePrefix+"| ", followPrefix+"| "); err != nil {
 			return err
 		}
 
