@@ -41,11 +41,17 @@
 
 <h3>Text paragraphs</h3>
 
-<p>This is a rather long paragraph to show the text-wrapping supported by the Markdown exporter.</p>
+<p>This is a rather long paragraph to show the text-wrapping supported by the ASCII and Markdown exporters. Applications integrating FTML support should “do the right thing” regarding breaking lines in paragraphs. This could mean that the full available width of the window or screen is used, or that the lines are broken to limit the number of characters per line to a specific number. FTML itself <i>does not</i> encorce any specific rules here, the included Markdown exporter does wrap at 80 characters, though.</p>
 
 <h3>Quoted paragraphs</h3>
 
-<p>TBD</p>
+<blockquote>
+  <p>Like any other blocks, quotes may contain any of the different paragraph types as children. First, let's look into wrapping of quotes, though. As you can see, this is a very long line again.</p>
+  <p>This is the second paragraph of the very same quote. This paragraph, too, will be broken into multiple lines, if necessary.</p>
+  <blockquote>
+    <p>Now, finally, let's look at a second level quote. Like expected, this paragraph will also wrap at the same width, even if if it indented further then the paragraphs above.</p>
+  </blockquote>
+</blockquote>
 
 <h3>Bullet points</h3>
 
@@ -61,6 +67,10 @@
   <li>
     <p>This is another bullet point.</p>
     <p>Contrasting to the first bullet point, this one contains multiple paragraps, with this one being the second one.</p>
+  </li>
+
+  <li>
+    <p>This is a bullet point<br/>with a bunch of<br/>hard line breaks.</p>
   </li>
 
   <li>
