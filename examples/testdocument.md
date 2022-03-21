@@ -41,7 +41,7 @@ TBD
 - This is a bullet point.
 
 - This is another bullet point.
-  
+
   Contrasting to the first bullet point, this one contains multiple paragraps, with this one being the second one.
 
 - > This bulletpoint contains a quote.
@@ -51,32 +51,32 @@ TBD
 FTML supports nesting of paragraphs, so this is entirely possible:
 
 > Please see, how the following list is part of a quote and contains nested paragraphs.
-> 
+>
 > - This is a paragraph inside of a quoted paragraph
-> 
+>
 > - This bullet points contains another quote:
->   
+>
 >   > You can never have enough nesting of paragraphs.
-—Robert Lillack
-> 
+>   > —Robert Lillack
+>
 > - 1.  One
->   
+>
 >   2.  …
->   
+>
 >   3.  …
->   
+>
 >   4.  …
->   
+>
 >   5.  …
->   
+>
 >   6.  …
->   
+>
 >   7.  …
->   
+>
 >   8.  …
->   
+>
 >   9.  …
->   
+>
 >   10. aaaaand
->       
+>
 >       Ten!

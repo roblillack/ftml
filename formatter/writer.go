@@ -10,8 +10,16 @@ import (
 
 type Breadcrumbs []ftml.ParagraphType
 
+type Formatter struct {
+	Document *ftml.Document
+	Writer   io.Writer
+
+	currentLineSpacing int
+}
+
 func Write(w io.Writer, d *ftml.Document) error {
-	return writeParagraphs(w, d.Paragraphs, "", "")
+	f := &Formatter{Writer: w, Document: d}
+	return f.WriteParagraphs(d.Paragraphs, "", "")
 }
 
 const WrapWidth = 72
@@ -27,10 +35,10 @@ var styleTags = map[ftml.InlineStyle]struct{ B, E string }{
 	ftml.StyleStrike:    {"\033[9m", "\033[29m"},
 }
 
-func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (int, error) {
+func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string) (int, error) {
 	tag := styleTags[span.Style]
 	if tag.B != "" {
-		if _, err := io.WriteString(w, tag.B); err != nil {
+		if _, err := io.WriteString(f.Writer, tag.B); err != nil {
 			return length, err
 		}
 	}
@@ -41,7 +49,7 @@ func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (in
 				if !strings.ContainsRune(" \t\n", rune(span.Text[ws])) {
 					break
 				}
-				if _, err := io.WriteString(w, string(span.Text[ws])); err != nil {
+				if _, err := io.WriteString(f.Writer, string(span.Text[ws])); err != nil {
 					return length, err
 				}
 				length++
@@ -53,7 +61,7 @@ func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (in
 
 			nextWs := strings.IndexAny(span.Text[pos:], " \t\n")
 			if nextWs == -1 {
-				if _, err := io.WriteString(w, span.Text[pos:]); err != nil {
+				if _, err := io.WriteString(f.Writer, span.Text[pos:]); err != nil {
 					return length, err
 				}
 				length += len([]rune(span.Text[pos:]))
@@ -63,13 +71,13 @@ func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (in
 			word := span.Text[pos : pos+nextWs]
 			wordLen := len([]rune(word))
 			if length+wordLen > WrapWidth {
-				if _, err := io.WriteString(w, "\n"+followPrefix); err != nil {
+				if _, err := io.WriteString(f.Writer, "\n"+followPrefix); err != nil {
 					return length, err
 				}
 				length = len([]rune(followPrefix))
 			}
 
-			if _, err := io.WriteString(w, word); err != nil {
+			if _, err := io.WriteString(f.Writer, word); err != nil {
 				return length, err
 			}
 			length += wordLen
@@ -92,7 +100,7 @@ func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (in
 		// }
 	} else {
 		for _, child := range span.Children {
-			l, err := writeSpan(w, child, length, followPrefix)
+			l, err := f.WriteSpan(child, length, followPrefix)
 			if err != nil {
 				return length, err
 			}
@@ -101,7 +109,7 @@ func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (in
 	}
 
 	if tag.E != "" {
-		if _, err := io.WriteString(w, tag.E); err != nil {
+		if _, err := io.WriteString(f.Writer, tag.E); err != nil {
 			return length, err
 		}
 	}
@@ -109,15 +117,15 @@ func writeSpan(w io.Writer, span ftml.Span, length int, followPrefix string) (in
 	return length, nil
 }
 
-func writeParagraphs(w io.Writer, paragraphs []*ftml.Paragraph, linePrefix, followPrefix string) error {
+func (f *Formatter) WriteParagraphs(paragraphs []*ftml.Paragraph, linePrefix, followPrefix string) error {
 	for idx, c := range paragraphs {
 		if idx > 0 {
-			if _, err := io.WriteString(w, followPrefix+"\n"); err != nil {
+			if _, err := io.WriteString(f.Writer, followPrefix+"\n"); err != nil {
 				return err
 			}
 		}
 
-		if err := writeParagraph(w, c, linePrefix, followPrefix); err != nil {
+		if err := f.WriteParagraph(c, linePrefix, followPrefix); err != nil {
 			return err
 		}
 
@@ -133,57 +141,83 @@ func pad(s string, l int) string {
 	return s
 }
 
-func writeParagraph(w io.Writer, p *ftml.Paragraph, linePrefix string, followPrefix string) error {
+func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followPrefix string) error {
 	if p.Leaf() {
-		if _, err := io.WriteString(w, linePrefix); err != nil {
+		if _, err := io.WriteString(f.Writer, linePrefix); err != nil {
 			return err
 		}
 
 		length := len([]rune(linePrefix))
 
+		prev := 0
+		next := 0
 		prefix := ""
+
 		switch p.Type {
 		case ftml.Header1Paragraph:
 			prefix = "# "
+			prev = 3
+			next = 2
 		case ftml.Header2Paragraph:
 			prefix = "## "
+			prev = 2
+			next = 1
 		case ftml.Header3Paragraph:
 			prefix = "### "
+			prev = 1
 		}
-		if _, err := io.WriteString(w, prefix); err != nil {
+
+		if prev > f.currentLineSpacing {
+			prev -= f.currentLineSpacing
+		} else {
+			prev = 0
+		}
+		f.currentLineSpacing = 0
+
+		for i := 0; i < prev; i++ {
+			if _, err := io.WriteString(f.Writer, "\n"); err != nil {
+				return err
+			}
+		}
+
+		if _, err := io.WriteString(f.Writer, prefix); err != nil {
 			return err
 		}
 		length += len([]rune(prefix))
 
 		for _, c := range p.Content {
 			if c.Text == "\n" {
-				if _, err := io.WriteString(w, " \n"+followPrefix+prefix); err != nil {
+				if _, err := io.WriteString(f.Writer, " \n"+followPrefix+prefix); err != nil {
 					return err
 				}
 				length = len([]rune(followPrefix + prefix))
 				continue
 			}
-			l, err := writeSpan(w, c, length, followPrefix)
+			l, err := f.WriteSpan(c, length, followPrefix)
 			if err != nil {
 				return err
 			}
 			length = l
 		}
-		if _, err := io.WriteString(w, "\n"); err != nil {
-			return err
+
+		for i := 0; i < next+1; i++ {
+			if _, err := io.WriteString(f.Writer, "\n"); err != nil {
+				return err
+			}
 		}
 
+		f.currentLineSpacing = next
 		return nil
 	}
 
 	if p.Type == ftml.UnorderedListParagraph {
 		for idx, entry := range p.Entries {
 			if idx > 0 {
-				if _, err := io.WriteString(w, followPrefix+"\n"); err != nil {
+				if _, err := io.WriteString(f.Writer, followPrefix+"\n"); err != nil {
 					return err
 				}
 			}
-			if err := writeParagraphs(w, entry, linePrefix+" - ", followPrefix+"   "); err != nil {
+			if err := f.WriteParagraphs(entry, linePrefix+" - ", followPrefix+"   "); err != nil {
 				return err
 			}
 			linePrefix = followPrefix
@@ -197,11 +231,11 @@ func writeParagraph(w io.Writer, p *ftml.Paragraph, linePrefix string, followPre
 
 		for idx, entry := range p.Entries {
 			if idx > 0 {
-				if _, err := io.WriteString(w, followPrefix+"\n"); err != nil {
+				if _, err := io.WriteString(f.Writer, followPrefix+"\n"); err != nil {
 					return err
 				}
 			}
-			if err := writeParagraphs(w, entry, linePrefix+pad(fmt.Sprintf("%d. ", idx+1), digits+2), followPrefix+strings.Repeat(" ", digits+2)); err != nil {
+			if err := f.WriteParagraphs(entry, linePrefix+pad(fmt.Sprintf("%d. ", idx+1), digits+2), followPrefix+strings.Repeat(" ", digits+2)); err != nil {
 				return err
 			}
 			linePrefix = followPrefix
@@ -211,12 +245,12 @@ func writeParagraph(w io.Writer, p *ftml.Paragraph, linePrefix string, followPre
 	}
 
 	if p.Type == ftml.QuoteParagraph {
-		if err := writeParagraphs(w, p.Children, linePrefix+"| ", followPrefix+"| "); err != nil {
+		if err := f.WriteParagraphs(p.Children, linePrefix+"| ", followPrefix+"| "); err != nil {
 			return err
 		}
 
 		return nil
 	}
 
-	return writeParagraphs(w, p.Children, linePrefix, followPrefix)
+	return f.WriteParagraphs(p.Children, linePrefix, followPrefix)
 }
