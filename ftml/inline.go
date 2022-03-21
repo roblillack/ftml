@@ -3,6 +3,7 @@ package ftml
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 )
 
 type InlineStyle uint8
@@ -46,6 +47,14 @@ type Span struct {
 	Text       string
 	LinkTarget string
 	Children   []Span
+}
+
+func (s *Span) Width() int {
+	l := utf8.RuneCountInString(s.Text)
+	for _, i := range s.Children {
+		l += i.Width()
+	}
+	return l
 }
 
 func (s *Span) String() string {

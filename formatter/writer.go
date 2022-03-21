@@ -3,6 +3,7 @@ package formatter
 import (
 	"fmt"
 	"io"
+	"math"
 	"strings"
 
 	"github.com/roblillack/pure/ftml"
@@ -33,6 +34,19 @@ var styleTags = map[ftml.InlineStyle]struct{ B, E string }{
 	ftml.StyleUnderline: {"\033[4m", "\033[24m"},
 	ftml.StyleCode:      {"", ""},
 	ftml.StyleStrike:    {"\033[9m", "\033[29m"},
+}
+
+func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix string) (int, error) {
+	l := span.Width()
+
+	for i := math.Floor(float64(WrapWidth)/2 - float64(l)/2); i > 0; i-- {
+		if _, err := io.WriteString(f.Writer, " "); err != nil {
+			return length, err
+		}
+		length++
+	}
+
+	return f.WriteSpan(span, length, followPrefix)
 }
 
 func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string) (int, error) {
@@ -151,19 +165,26 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 
 		prev := 0
 		next := 0
+		boldHeaders := false
+		underlineChar := ""
 		prefix := ""
 
 		switch p.Type {
 		case ftml.Header1Paragraph:
-			prefix = "# "
+			// prefix = "# "
+			boldHeaders = true
 			prev = 3
 			next = 2
 		case ftml.Header2Paragraph:
-			prefix = "## "
+			// prefix = "## "
+			underlineChar = "="
+			boldHeaders = true
 			prev = 2
 			next = 1
 		case ftml.Header3Paragraph:
-			prefix = "### "
+			// prefix = "### "
+			boldHeaders = true
+			underlineChar = "-"
 			prev = 1
 		}
 
@@ -193,14 +214,48 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 				length = len([]rune(followPrefix + prefix))
 				continue
 			}
-			l, err := f.WriteSpan(c, length, followPrefix)
+			var l int
+			var err error
+
+			if boldHeaders {
+				c = ftml.Span{
+					Style:    ftml.StyleBold,
+					Children: []ftml.Span{c},
+				}
+			}
+			if p.Type == ftml.Header1Paragraph {
+				l, err = f.WriteCentered(c, length, followPrefix)
+			} else {
+				l, err = f.WriteSpan(c, length, followPrefix)
+			}
 			if err != nil {
 				return err
 			}
 			length = l
 		}
 
-		for i := 0; i < next+1; i++ {
+		if _, err := io.WriteString(f.Writer, "\n"); err != nil {
+			return err
+		}
+
+		if underlineChar != "" {
+			l := len([]rune(prefix))
+			for _, i := range p.Content {
+				l += i.Width()
+			}
+
+			for i := 0; i < l; i++ {
+				if _, err := io.WriteString(f.Writer, underlineChar); err != nil {
+					return err
+				}
+			}
+
+			if _, err := io.WriteString(f.Writer, "\n"); err != nil {
+				return err
+			}
+		}
+
+		for i := 0; i < next; i++ {
 			if _, err := io.WriteString(f.Writer, "\n"); err != nil {
 				return err
 			}
