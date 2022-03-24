@@ -14,7 +14,10 @@ func TestParsingSimpleParagraphs(t *testing.T) {
 		`<p>This is a test.</p>`:                              doc(p__("This is a test.")),
 		`<p>one</p><p>two</p>`:                                doc(p__("one"), p__("two")),
 		`<blockquote><p>one</p></blockquote><p>two</p>`:       doc(quote_(p__("one")), p__("two")),
-		`<h1> Hello World! </h1>`:                             doc(h1_(" Hello World! ")),
+		`<p><b>Bold</b> text.</p>`:                            doc(p_(b__("Bold"), span(" text."))),
+		`<p>Test <b>bold</b></p>`:                             doc(p_(span("Test "), b__("bold"))),
+		`<h1> Hello World! </h1>`:                             doc(h1_("Hello World!")),
+		`<p>A<br/> B</p>`:                                     doc(p_(span("A"), span("\n"), span("B"))),
 		`<ul><li><p>a</p></li><li><p>b</p></li></ul>`:         doc(ul_(li_(p__("a")), li_(p__("b")))),
 		`<ul><li><p>a</p></li><li><p>b</p><p>c</p></li></ul>`: doc(ul_(li_(p__("a")), li_(p__("b"), p__("c")))),
 		`<ul>
@@ -39,11 +42,30 @@ func TestParsingSimpleParagraphs(t *testing.T) {
 	}
 }
 
+func TestTrimmingWhiteSpace(t *testing.T) {
+	type Scenario struct {
+		Before []Span
+		After  []Span
+	}
+	for _, scenario := range []Scenario{
+		{Before: []Span{}, After: []Span{}},
+		{Before: []Span{span("test")}, After: []Span{span("test")}},
+		{Before: []Span{span(" test")}, After: []Span{span("test")}},
+		{Before: []Span{span("test ")}, After: []Span{span("test")}},
+		{Before: []Span{span(" test ")}, After: []Span{span("test")}},
+		{Before: []Span{span("\n  test, "), span("test.\n")}, After: []Span{span("test, "), span("test.")}},
+	} {
+		assert.Equal(t, scenario.After, trimWhiteSpace(scenario.Before))
+	}
+
+}
+
 func TestParsingAndWritingStyles(t *testing.T) {
 	simpleTests := map[string][]Span{
-		`This is a test.`:  {span("This is a test.")},
-		` This is a test.`: {span(" This is a test.")},
-		`This is a test. `: {span("This is a test. ")},
+		`This is a test.`:            {span("This is a test.")},
+		`&emsp14;This is a test.`:    {span(" This is a test.")},
+		`This is a test.&emsp14;`:    {span("This is a test. ")},
+		`A&emsp14;&emsp14;&emsp14;B`: {span("A   B")},
 	}
 	indentedTests := map[string][]Span{
 		`This is a <b>test</b>.`:               {span("This is a "), b__("test"), span(".")},

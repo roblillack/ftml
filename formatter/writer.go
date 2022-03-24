@@ -14,12 +14,18 @@ type Breadcrumbs []ftml.ParagraphType
 type Formatter struct {
 	Document *ftml.Document
 	Writer   io.Writer
+	ANSI     bool
 
 	currentLineSpacing int
 }
 
-func Write(w io.Writer, d *ftml.Document) error {
-	f := &Formatter{Writer: w, Document: d}
+func Write(w io.Writer, d *ftml.Document, ansiCodes bool) error {
+	f := &Formatter{
+		Writer:   w,
+		Document: d,
+		ANSI:     ansiCodes,
+	}
+
 	return f.WriteParagraphs(d.Paragraphs, "", "")
 }
 
@@ -39,7 +45,7 @@ var styleTags = map[ftml.InlineStyle]struct{ B, E string }{
 func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix string) (int, error) {
 	l := span.Width()
 
-	for i := math.Floor(float64(WrapWidth)/2 - float64(l)/2); i > 0; i-- {
+	for i := math.Floor(float64(WrapWidth-len(followPrefix))/2 - float64(l)/2); i > 0; i-- {
 		if _, err := io.WriteString(f.Writer, " "); err != nil {
 			return length, err
 		}
@@ -51,7 +57,7 @@ func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix strin
 
 func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string) (int, error) {
 	tag := styleTags[span.Style]
-	if tag.B != "" {
+	if f.ANSI && tag.B != "" {
 		if _, err := io.WriteString(f.Writer, tag.B); err != nil {
 			return length, err
 		}
@@ -122,7 +128,7 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string) (
 		}
 	}
 
-	if tag.E != "" {
+	if f.ANSI && tag.E != "" {
 		if _, err := io.WriteString(f.Writer, tag.E); err != nil {
 			return length, err
 		}
@@ -196,7 +202,7 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 		f.currentLineSpacing = 0
 
 		for i := 0; i < prev; i++ {
-			if _, err := io.WriteString(f.Writer, "\n"); err != nil {
+			if _, err := io.WriteString(f.Writer, "\n"+followPrefix); err != nil {
 				return err
 			}
 		}
@@ -244,6 +250,10 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 				l += i.Width()
 			}
 
+			if _, err := io.WriteString(f.Writer, followPrefix); err != nil {
+				return err
+			}
+
 			for i := 0; i < l; i++ {
 				if _, err := io.WriteString(f.Writer, underlineChar); err != nil {
 					return err
@@ -256,7 +266,7 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 		}
 
 		for i := 0; i < next; i++ {
-			if _, err := io.WriteString(f.Writer, "\n"); err != nil {
+			if _, err := io.WriteString(f.Writer, followPrefix+"\n"); err != nil {
 				return err
 			}
 		}

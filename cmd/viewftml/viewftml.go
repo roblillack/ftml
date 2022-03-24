@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -14,11 +15,14 @@ func Errorf(layout string, args ...interface{}) {
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		Errorf("Syntax: viewftml INPUT")
+	disableANSI := flag.Bool("n", false, "Disable use of ANSI escape sequences.")
+	flag.Parse()
+
+	if len(flag.Args()) != 1 {
+		Errorf("Syntax: viewftml [-n] INPUT")
 	}
 
-	inputFile := os.Args[1]
+	inputFile := flag.Arg(0)
 
 	f, err := os.Open(inputFile)
 	if err != nil {
@@ -34,7 +38,7 @@ func main() {
 		Errorf("Unable to close %s after reading: %s", inputFile, err)
 	}
 
-	if err := formatter.Write(os.Stdout, doc); err != nil {
+	if err := formatter.Write(os.Stdout, doc, !*disableANSI); err != nil {
 		Errorf("Unable to write document to: %s", err)
 	}
 }

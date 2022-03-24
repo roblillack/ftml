@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/roblillack/gockl"
 )
@@ -17,47 +19,12 @@ type parser struct {
 	StyleStack    []InlineStyle
 }
 
-var wrapperElements = map[string]ParagraphType{
-	// Contains text
-	"p":  TextParagraph,
-	"h1": Header1Paragraph,
-	"h2": Header2Paragraph,
-	"h3": Header3Paragraph,
-	// Contains child paragraphs
-	"blockquote": QuoteParagraph,
-	// Contains items each of which contain child paragraphs
-	"ul": UnorderedListParagraph,
-	"ol": OrderedListParagraph,
-}
-
-var inlineElements = map[string]InlineStyle{
-	"b":    StyleBold,
-	"i":    StyleItalic,
-	"u":    StyleUnderline,
-	"s":    StyleStrike,
-	"mark": StyleHighlight,
-	"code": StyleCode,
-}
-
-var elementTags = map[ParagraphType]string{}
-var styleTags = map[InlineStyle]string{}
-
-func init() {
-	for tag, t := range wrapperElements {
-		elementTags[t] = tag
-	}
-
-	for tag, s := range inlineElements {
-		styleTags[s] = tag
-	}
-}
-
 func (p *parser) down(paraType ParagraphType) error {
 	para := &Paragraph{Type: paraType}
 
 	parent := p.parent()
 	if parent != nil && parent.Leaf() {
-		return fmt.Errorf("paragraphs not allowed inside leaf paragraph nodes whenn trying to add %s below %s", paraType, parent.Type)
+		return fmt.Errorf("paragraphs not allowed inside leaf paragraph nodes when trying to add %s below %s", paraType, parent.Type)
 	}
 
 	if parent == nil {
@@ -148,6 +115,22 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 	return nil
 }
 
+var space = regexp.MustCompile(`\s+`)
+
+func collapseWhitespace(s string, first, last bool) string {
+	if first {
+		s = strings.TrimLeftFunc(s, unicode.IsSpace)
+	}
+	if last {
+		s = strings.TrimRightFunc(s, unicode.IsSpace)
+	}
+	return space.ReplaceAllString(s, " ")
+}
+
+func decodeEntities(s string) string {
+	return strings.ReplaceAll(s, NonCollapsibleSpaceEntity, " ")
+}
+
 func readText(z *gockl.Tokenizer) (string, gockl.Token, error) {
 	res := ""
 
@@ -179,6 +162,7 @@ func readSpan(z *gockl.Tokenizer, style InlineStyle) (Span, error) {
 		if token == nil {
 			return res, fmt.Errorf("no closing tag for %s", style)
 		}
+		str = decodeEntities(collapseWhitespace(str, false, false))
 		if str != "" {
 			res.Children = append(res.Children, Span{Text: str})
 		}
@@ -202,43 +186,132 @@ func readSpan(z *gockl.Tokenizer, style InlineStyle) (Span, error) {
 	}
 }
 
+func trimWhiteSpace(spans []Span) []Span {
+	res := spans
+
+	for idx, i := range res {
+		if i.Style != StyleNone {
+			continue
+		}
+		txt := strings.TrimLeftFunc(i.Text, unicode.IsSpace)
+		if txt == "" {
+			n := append([]Span{}, res[0:idx]...)
+			res = append(n, res[idx+1:]...)
+		} else if txt != i.Text {
+			i.Text = txt
+			res[idx] = i
+		}
+		break
+	}
+
+	for idx := len(res) - 1; idx >= 0; idx-- {
+		i := res[idx]
+		if i.Style != StyleNone {
+			continue
+		}
+		txt := strings.TrimRightFunc(i.Text, unicode.IsSpace)
+		if txt == "" {
+			n := append([]Span{}, res[0:idx]...)
+			res = append(n, res[idx+1:]...)
+		} else if txt != i.Text {
+			i.Text = txt
+			res[idx] = i
+		}
+		break
+	}
+
+	return res
+}
+
+type bufferedSpanList struct {
+	Spans   []Span
+	First   bool
+	TrimEnd bool
+	Buffer  string
+}
+
+func newBufferedSpanList() *bufferedSpanList {
+	return &bufferedSpanList{
+		Spans:   []Span{},
+		First:   true,
+		TrimEnd: false,
+		Buffer:  "",
+	}
+}
+
+func (b *bufferedSpanList) flush() {
+	if b.Buffer != "" {
+		b.Spans = append(b.Spans, Span{
+			Text: decodeEntities(collapseWhitespace(b.Buffer, b.First, b.TrimEnd)),
+		})
+		b.Buffer = ""
+		b.First = false
+	}
+}
+
+func (b *bufferedSpanList) AddLineBreak() {
+	b.TrimEnd = true
+	b.flush()
+	b.Spans = append(b.Spans, Span{Text: "\n"})
+	b.First = true
+}
+
+func (b *bufferedSpanList) Add(span Span) {
+	b.flush()
+	b.First = false
+	b.TrimEnd = false
+	b.Spans = append(b.Spans, span)
+}
+
+func (b *bufferedSpanList) AddText(txt string) {
+	b.TrimEnd = false
+	b.flush()
+	b.Buffer = txt
+}
+
+func (b *bufferedSpanList) Close() []Span {
+	b.TrimEnd = true
+	b.flush()
+	return b.Spans
+}
+
 func readContent(z *gockl.Tokenizer, endToken string) ([]Span, error) {
-	res := []Span{}
+	res := newBufferedSpanList()
 
 	for {
 		str, token, err := readText(z)
 		if str != "" {
-			res = append(res, Span{Text: str})
+			res.AddText(str)
 		}
 		if err != nil || token == nil {
-			return res, err
+			return res.Close(), err
 		}
 
 		if t, ok := token.(gockl.EndElementToken); ok && t.Name() == endToken {
-			return res, nil
+			return res.Close(), nil
 		}
 
-		if t, ok := token.(gockl.EmptyElementToken); ok && t.Name() == "br" {
-			res = append(res, Span{Text: "\n"})
+		if t, ok := token.(gockl.EmptyElementToken); ok && t.Name() == LineBreakElementName {
+			res.AddLineBreak()
 			continue
 		}
 
 		t, ok := token.(gockl.StartElementToken)
 		if !ok {
-			return res, fmt.Errorf("unexpected token type: %v", token)
+			return res.Close(), fmt.Errorf("unexpected token type: %v", token)
 		}
 
 		st, ok := inlineElements[t.Name()]
 		if !ok {
-			return res, fmt.Errorf("non-inline token: %v", token)
+			return res.Close(), fmt.Errorf("non-inline token: %v", token)
 		}
 
 		span, err := readSpan(z, st)
 		if err != nil {
-			return res, err
+			return res.Close(), err
 		}
 
-		res = append(res, span)
+		res.Add(span)
 	}
 }
 
