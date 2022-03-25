@@ -21,7 +21,7 @@ And this is the second one.
 `
 
 	buf := &bytes.Buffer{}
-	if assert.NoError(t, Write(buf, doc)) {
+	if assert.NoError(t, Write(buf, doc, false)) {
 		assert.Equal(t, res, buf.String())
 	}
 }
