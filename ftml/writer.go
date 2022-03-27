@@ -3,7 +3,6 @@ package ftml
 import (
 	"fmt"
 	"io"
-	"log"
 	"regexp"
 	"strings"
 	"unicode/utf8"
@@ -108,75 +107,6 @@ func (o *output) Emit(txt string, level int) error {
 
 	return nil
 
-}
-
-var multipleSpaces = regexp.MustCompile(`  +`)
-var trailingSpaces = regexp.MustCompile(`\s +`)
-var leadingSpaces = regexp.MustCompile(` +\s`)
-
-func replaceSpaces(s string) string {
-	b := strings.Builder{}
-	for i := 0; i < len(s); i++ {
-		b.WriteString(NonCollapsibleSpaceEntity)
-	}
-	return b.String()
-}
-
-func replaceLeadingSpaces(s string) string {
-	b := strings.Builder{}
-	for i := 0; i < len(s)-1; i++ {
-		b.WriteString(NonCollapsibleSpaceEntity)
-	}
-	b.WriteString(s[len(s)-1:])
-	return b.String()
-}
-
-func replaceTrailingSpaces(s string) string {
-	b := strings.Builder{}
-	b.WriteString(s[0:1])
-	for i := 0; i < len(s)-1; i++ {
-		b.WriteString(NonCollapsibleSpaceEntity)
-	}
-	return b.String()
-}
-
-func encodeEntities(s string, first, last bool) string {
-	if first {
-		s = regexp.MustCompile(`^ +`).ReplaceAllStringFunc(s, replaceSpaces)
-	}
-	if last {
-		s = regexp.MustCompile(` +$`).ReplaceAllStringFunc(s, replaceSpaces)
-	}
-	s = multipleSpaces.ReplaceAllStringFunc(s, replaceSpaces)
-	s = trailingSpaces.ReplaceAllStringFunc(s, replaceTrailingSpaces)
-	s = leadingSpaces.ReplaceAllStringFunc(s, replaceLeadingSpaces)
-
-	return s
-}
-
-func encodeLineBreaks(s string, level int, indent string, last bool, width int) (string, int) {
-	res := ""
-	a := strings.Split(s, "\n")
-	for idx := 0; idx < len(a)-1; idx++ {
-		line := a[idx] + LineBreakElement + "\n"
-		if !last {
-			for j := 0; j < level; j++ {
-				line += indent
-			}
-		}
-		res += line
-		width = 0
-	}
-
-	if len(a) > 1 {
-		last := a[len(a)-1]
-		width = utf8.RuneCountInString(last)
-		res += last
-	}
-
-	log.Printf("%s --> %s\n", s, res)
-
-	return res, width
 }
 
 func (o *output) writeSpan(span Span, level int, first, last bool) error {

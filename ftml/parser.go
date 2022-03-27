@@ -127,10 +127,6 @@ func collapseWhitespace(s string, first, last bool) string {
 	return space.ReplaceAllString(s, " ")
 }
 
-func decodeEntities(s string) string {
-	return strings.ReplaceAll(s, NonCollapsibleSpaceEntity, " ")
-}
-
 func readText(z *gockl.Tokenizer) (string, gockl.Token, error) {
 	res := ""
 

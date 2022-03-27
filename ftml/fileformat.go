@@ -1,11 +1,5 @@
 package ftml
 
-// The very same entity is used by HTML5 to signify unicode code point U+2005:
-// A 1/4 em space which is usually around the same width as a normal ASCII space,
-// is breakable and will not collapse with other spaces in HTML.
-// Using this to mark breaking spaces, we're able to stay compatible with HTML5.
-const NonCollapsibleSpaceEntity = "&emsp14;"
-
 const LineBreakElementName = "br"
 const LineBreakElement = "<" + LineBreakElementName + " />"
 
