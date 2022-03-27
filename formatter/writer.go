@@ -42,6 +42,8 @@ var styleTags = map[ftml.InlineStyle]struct{ B, E string }{
 	ftml.StyleStrike:    {"\033[9m", "\033[29m"},
 }
 
+const resetAllModes = "\033[0m"
+
 func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix string) (int, error) {
 	l := span.Width()
 
@@ -52,10 +54,11 @@ func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix strin
 		length++
 	}
 
-	return f.WriteSpan(span, length, followPrefix)
+	return f.WriteSpan(span, length, followPrefix, StyleSet{})
 }
 
-func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string) (int, error) {
+func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, outerStyles StyleSet) (int, error) {
+	currentStyles := outerStyles.Add(span.Style)
 	tag := styleTags[span.Style]
 	if f.ANSI && tag.B != "" {
 		if _, err := io.WriteString(f.Writer, tag.B); err != nil {
@@ -91,8 +94,21 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string) (
 			word := span.Text[pos : pos+nextWs]
 			wordLen := len([]rune(word))
 			if length+wordLen > WrapWidth {
+				modes := currentStyles.All()
+				if f.ANSI && len(modes) > 0 {
+					if _, err := io.WriteString(f.Writer, resetAllModes); err != nil {
+						return length, err
+					}
+				}
 				if _, err := io.WriteString(f.Writer, "\n"+followPrefix); err != nil {
 					return length, err
+				}
+				if f.ANSI && len(modes) > 0 {
+					for _, i := range modes {
+						if _, err := io.WriteString(f.Writer, styleTags[i].B); err != nil {
+							return length, err
+						}
+					}
 				}
 				length = len([]rune(followPrefix))
 			}
@@ -103,24 +119,9 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string) (
 			length += wordLen
 			pos += nextWs
 		}
-
-		// words := strings.Fields(span.Text)
-		// for _, word := range words {
-		// 	wordLen := len([]rune(word))
-		// 	if wordLen+length > WrapWidth {
-		// 		if _, err := io.WriteString(w, "\n"+followPrefix); err != nil {
-		// 			return length, err
-		// 		}
-		// 		length = len([]rune(followPrefix))
-		// 	}
-		// 	if _, err := io.WriteString(w, word+" "); err != nil {
-		// 		return length, err
-		// 	}
-		// 	length += wordLen + 1
-		// }
 	} else {
 		for _, child := range span.Children {
-			l, err := f.WriteSpan(child, length, followPrefix)
+			l, err := f.WriteSpan(child, length, followPrefix, currentStyles)
 			if err != nil {
 				return length, err
 			}
@@ -177,18 +178,15 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 
 		switch p.Type {
 		case ftml.Header1Paragraph:
-			// prefix = "# "
 			boldHeaders = true
 			prev = 3
 			next = 2
 		case ftml.Header2Paragraph:
-			// prefix = "## "
 			underlineChar = "="
 			boldHeaders = true
 			prev = 2
 			next = 1
 		case ftml.Header3Paragraph:
-			// prefix = "### "
 			boldHeaders = true
 			underlineChar = "-"
 			prev = 1
@@ -232,7 +230,7 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 			if p.Type == ftml.Header1Paragraph {
 				l, err = f.WriteCentered(c, length, followPrefix)
 			} else {
-				l, err = f.WriteSpan(c, length, followPrefix)
+				l, err = f.WriteSpan(c, length, followPrefix, StyleSet{})
 			}
 			if err != nil {
 				return err
