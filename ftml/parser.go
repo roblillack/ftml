@@ -163,6 +163,11 @@ func readSpan(z *gockl.Tokenizer, style InlineStyle) (Span, error) {
 			res.Children = append(res.Children, Span{Text: str})
 		}
 
+		if t, ok := token.(gockl.EmptyElementToken); ok && t.Name() == LineBreakElementName {
+			res.Children = append(res.Children, Span{Text: "\n"})
+			continue
+		}
+
 		if t, ok := token.(gockl.StartElementToken); ok {
 			if st, ok := inlineElements[t.Name()]; ok {
 				span, err := readSpan(z, st)
