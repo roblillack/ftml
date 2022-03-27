@@ -282,7 +282,7 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 					return err
 				}
 			}
-			if err := f.WriteParagraphs(entry, linePrefix+" - ", followPrefix+"   "); err != nil {
+			if err := f.WriteParagraphs(entry, linePrefix+" • ", followPrefix+"   "); err != nil {
 				return err
 			}
 			linePrefix = followPrefix
