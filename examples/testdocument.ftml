@@ -213,8 +213,11 @@
 <blockquote>
   <p>
     This is a paragraph that contains a very long line of <mark>highlighted text
-    to force the formatter to break<br />the line in the middle.</mark> But
-    afterwards, of course, things should continue normally.
+    to force the formatter to break<br />
+    the<br />
+    line<br />
+    in the middle.</mark> But afterwards, of course, things should continue
+    normally.
   </p>
 </blockquote>
 

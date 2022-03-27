@@ -57,6 +57,26 @@ func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix strin
 	return f.WriteSpan(span, length, followPrefix, StyleSet{})
 }
 
+func (f *Formatter) EmitLineBreak(followPrefix string, currentStyles StyleSet) (int, error) {
+	modes := currentStyles.All()
+	if f.ANSI && len(modes) > 0 {
+		if _, err := io.WriteString(f.Writer, resetAllModes); err != nil {
+			return 0, err
+		}
+	}
+	if _, err := io.WriteString(f.Writer, "\n"+followPrefix); err != nil {
+		return 0, err
+	}
+	if f.ANSI && len(modes) > 0 {
+		for _, i := range modes {
+			if _, err := io.WriteString(f.Writer, styleTags[i].B); err != nil {
+				return 0, err
+			}
+		}
+	}
+	return len([]rune(followPrefix)), nil
+}
+
 func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, outerStyles StyleSet) (int, error) {
 	currentStyles := outerStyles.Add(span.Style)
 	tag := styleTags[span.Style]
@@ -66,7 +86,9 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 		}
 	}
 
-	if span.Style == ftml.StyleNone {
+	if span.Style == ftml.StyleNone && span.Text == "\n" {
+		return f.EmitLineBreak(followPrefix, currentStyles)
+	} else if span.Style == ftml.StyleNone {
 		for pos := 0; pos < len(span.Text); {
 			for ws := pos; ws < len(span.Text); ws++ {
 				if !strings.ContainsRune(" \t\n", rune(span.Text[ws])) {
@@ -94,23 +116,11 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 			word := span.Text[pos : pos+nextWs]
 			wordLen := len([]rune(word))
 			if length+wordLen > WrapWidth {
-				modes := currentStyles.All()
-				if f.ANSI && len(modes) > 0 {
-					if _, err := io.WriteString(f.Writer, resetAllModes); err != nil {
-						return length, err
-					}
+				if l, err := f.EmitLineBreak(followPrefix, currentStyles); err != nil {
+					return 0, err
+				} else {
+					length = l
 				}
-				if _, err := io.WriteString(f.Writer, "\n"+followPrefix); err != nil {
-					return length, err
-				}
-				if f.ANSI && len(modes) > 0 {
-					for _, i := range modes {
-						if _, err := io.WriteString(f.Writer, styleTags[i].B); err != nil {
-							return length, err
-						}
-					}
-				}
-				length = len([]rune(followPrefix))
 			}
 
 			if _, err := io.WriteString(f.Writer, word); err != nil {
