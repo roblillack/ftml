@@ -3,15 +3,37 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
+	"time"
 
 	"github.com/roblillack/ftml"
 	"github.com/roblillack/ftml/formatter"
+	"github.com/roblillack/ftml/html"
 )
 
 func Errorf(layout string, args ...interface{}) {
 	fmt.Fprintf(os.Stderr, layout+"\n", args...)
 	os.Exit(1)
+}
+
+func createReader(inputFile string) (bool, io.ReadCloser, error) {
+	if parsedURL, err := url.Parse(inputFile); err == nil && (parsedURL.Scheme == "http" || parsedURL.Scheme == "https") {
+		client := &http.Client{Timeout: 10 * time.Second}
+		resp, err := client.Get(inputFile)
+		if err != nil {
+			return false, nil, err
+		}
+		return true, resp.Body, nil
+	}
+
+	expectHTML := strings.ToLower(filepath.Ext(inputFile)) != ".ftml"
+	r, err := os.Open(inputFile)
+	return expectHTML, r, err
 }
 
 func main() {
@@ -23,14 +45,18 @@ func main() {
 	}
 
 	inputFile := flag.Arg(0)
-
-	f, err := os.Open(inputFile)
+	expectHTML, f, err := createReader(inputFile)
 	if err != nil {
 		Errorf("Unable to read %s: %s", inputFile, err)
 	}
 	defer f.Close()
 
-	doc, err := ftml.Parse(f)
+	var doc *ftml.Document
+	if expectHTML {
+		doc, err = html.Parse(f)
+	} else {
+		doc, err = ftml.Parse(f)
+	}
 	if err != nil {
 		Errorf("Unable to parse %s: %s", inputFile, err)
 	}
