@@ -1,7 +1,7 @@
 package formatter
 
 import (
-	"github.com/roblillack/pure/ftml"
+	"github.com/roblillack/ftml"
 )
 
 type StyleSet map[ftml.InlineStyle]int

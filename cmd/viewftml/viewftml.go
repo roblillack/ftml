@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/roblillack/pure/formatter"
-	"github.com/roblillack/pure/ftml"
+	"github.com/roblillack/ftml"
+	"github.com/roblillack/ftml/formatter"
 )
 
 func Errorf(layout string, args ...interface{}) {

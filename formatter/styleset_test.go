@@ -3,7 +3,7 @@ package formatter
 import (
 	"testing"
 
-	"github.com/roblillack/pure/ftml"
+	"github.com/roblillack/ftml"
 	"github.com/stretchr/testify/assert"
 )
 

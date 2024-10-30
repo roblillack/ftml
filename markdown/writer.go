@@ -5,7 +5,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/roblillack/pure/ftml"
+	"github.com/roblillack/ftml"
 )
 
 func Write(w io.Writer, d *ftml.Document) error {

@@ -1,6 +1,6 @@
-# Pure
+# FTML – Formatted Text Markup Language
 
-## FTML – Formatted Text Markup Language
+A WIP specification (and Go library) a HTML-compatible text markup language which only contains the most basic formatting options.
 
 ## Design goals
 
@@ -11,7 +11,7 @@
 
 1. Must be upwards compatible to HTML 5 (not as full documents, but the FTML needs to be embeddable into a HTML5 file as is)
 
-2.
+2. TBD
 
 ### Non-goals
 

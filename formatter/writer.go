@@ -6,7 +6,7 @@ import (
 	"math"
 	"strings"
 
-	"github.com/roblillack/pure/ftml"
+	"github.com/roblillack/ftml"
 )
 
 type Breadcrumbs []ftml.ParagraphType

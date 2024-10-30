@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/roblillack/pure/ftml"
-	"github.com/roblillack/pure/markdown"
+	"github.com/roblillack/ftml"
+	"github.com/roblillack/ftml/markdown"
 )
 
 func Errorf(layout string, args ...interface{}) {

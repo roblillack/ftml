@@ -1,4 +1,4 @@
-module github.com/roblillack/pure
+module github.com/roblillack/ftml
 
 go 1.15
 
