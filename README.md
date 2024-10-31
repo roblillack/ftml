@@ -1,6 +1,8 @@
+_Warning: This is a work in progress. The specification is not final and this repository really only is public because I'm using the library as a dependency in some other projects._
+
 # FTML – Formatted Text Markup Language
 
-A WIP specification (and Go library) a HTML-compatible text markup language which only contains the most basic formatting options.
+A WIP specification (and Go library) of a HTML-compatible text markup language which only contains the most basic formatting options.
 
 ## Design goals
 
