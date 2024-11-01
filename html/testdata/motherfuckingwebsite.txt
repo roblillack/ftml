@@ -109,9 +109,9 @@ Yes, this is fucking satire, you fuck
 -------------------------------------
 
 I'm not actually saying your shitty site should look like this. What I'm 
-saying is that all the problems we have with websites are . Websites 
-aren't broken by default, they are functional, high-performing, and 
-accessible. You break them. You son-of-a-bitch.
+saying is that all the problems we have with websites are ones we create ourselves
+. Websites aren't broken by default, they are functional, 
+high-performing, and accessible. You break them. You son-of-a-bitch.
 
 
 "Good design is as little design as possible."

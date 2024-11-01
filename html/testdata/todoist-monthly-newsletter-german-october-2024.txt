@@ -10,7 +10,8 @@ Das Neueste aus dem Todoist-Versum – Oktober 2024
 
 Verwalte deine als Zeitblöcke geplanten Todoist-Aufgaben, z. B. 
 Kundenangebote durchgehen 14:00 für 2h oder Kitty von Tierärztin abholen 
-10:00 für 30m, indem du  – verfügbar bei allen Abonnement-Plänen!
+10:00 für 30m, indem du diese Aufgaben direkt mit deinem Google Kalender synchronisierst 
+– verfügbar bei allen Abonnement-Plänen!
 
 Deine To-dos und Termine an einem Ort
 
@@ -30,10 +31,12 @@ einzurichten (definitiv einfacher als Kitty in ihre Transportbox für den
 Tierarzttermin zu locken).
 
  • Wenn du es noch nicht getan hast, gehe zuerst zu den , um Todoist mit 
-   deinem Google Kalender-Konto zu verbinden. Klicke auf  und folge den Anweisungen.
+   deinem Google Kalender-Konto zu verbinden. Klicke auf Google Kalender verbinden 
+   und folge den Anweisungen.
 
  • Sobald du mit Google Kalender verbunden bist, schalte unten in den 
-   Kalender-Einstellungen den Kippschalter um, um die Option  zu aktivieren.
+   Kalender-Einstellungen den Kippschalter um, um die Option Aufgaben 
+   mit dem Kalender synchronisieren zu aktivieren.
 
  • Innerhalb von Sekunden wird ein „Todoist“-Kalender in deinem Google 
    Kalender-Konto angezeigt.

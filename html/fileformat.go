@@ -5,6 +5,8 @@ import "github.com/roblillack/ftml"
 const LineBreakElementName = "br"
 const LineBreakElement = "<" + LineBreakElementName + " />"
 
+// Tags that should be skipped completely when parsing the HTML,
+// all other unknown tags ignored but their content is parsed.
 var skipTags = map[string]struct{}{
 	"title":  {},
 	"style":  {},
@@ -25,12 +27,14 @@ var wrapperElements = map[string]ftml.ParagraphType{
 }
 
 var inlineElements = map[string]ftml.InlineStyle{
-	"b":    ftml.StyleBold,
-	"i":    ftml.StyleItalic,
-	"u":    ftml.StyleUnderline,
-	"s":    ftml.StyleStrike,
-	"mark": ftml.StyleHighlight,
-	"code": ftml.StyleCode,
+	"b":      ftml.StyleBold,
+	"i":      ftml.StyleItalic,
+	"u":      ftml.StyleUnderline,
+	"s":      ftml.StyleStrike,
+	"mark":   ftml.StyleHighlight,
+	"code":   ftml.StyleCode,
+	"strong": ftml.StyleBold,
+	"em":     ftml.StyleItalic,
 }
 
 var elementTags = map[ftml.ParagraphType]string{}

@@ -10,7 +10,8 @@ All that’s new in the Todoist-verse – October 2024
 
 Manage your time-blocked Todoist to-dos like Review client proposals at 
 2pm for 2h or Pick up Garfield from the vet at 10am for 30m more 
-efficiently by  – available on all plans!
+efficiently by syncing those tasks directly to your Google Calendar – 
+available on all plans!
 
 Your to-dos and events all in one place
 
@@ -29,10 +30,11 @@ Syncing tasks to Google Calendar is incredibly easy to set up (easier
 than, say, coaxing Garfield into the car for his vet appointment).
 
  • If you haven’t done so already, first head to  to connect Todoist to 
-   your Google Calendar account. Click  and follow the flow.
+   your Google Calendar account. Click Connect Google Calendar and 
+   follow the flow.
 
  • Once you’re connected to Google Calendar, flip the toggle at the 
-   bottom of Calendar settings to enable the  option.
+   bottom of Calendar settings to enable the Sync tasks to calendar option.
 
  • Within seconds, you’ll see a “Todoist” calendar appear in your Google 
    Calendar account.
