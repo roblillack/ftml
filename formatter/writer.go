@@ -88,7 +88,7 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 
 	if span.Style == ftml.StyleNone && span.Text == "\n" {
 		return f.EmitLineBreak(followPrefix, currentStyles)
-	} else if span.Style == ftml.StyleNone {
+	} else if span.Style == ftml.StyleNone && len(span.Children) == 0 {
 		for pos := 0; pos < len(span.Text); {
 			for ws := pos; ws < len(span.Text); ws++ {
 				if !strings.ContainsRune(" \t\n", rune(span.Text[ws])) {
