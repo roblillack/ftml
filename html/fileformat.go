@@ -28,24 +28,19 @@ var wrapperElements = map[string]ftml.ParagraphType{
 
 var inlineElements = map[string]ftml.InlineStyle{
 	"b":      ftml.StyleBold,
+	"strong": ftml.StyleBold,
 	"i":      ftml.StyleItalic,
+	"em":     ftml.StyleItalic,
 	"u":      ftml.StyleUnderline,
 	"s":      ftml.StyleStrike,
 	"mark":   ftml.StyleHighlight,
 	"code":   ftml.StyleCode,
-	"strong": ftml.StyleBold,
-	"em":     ftml.StyleItalic,
 }
 
 var elementTags = map[ftml.ParagraphType]string{}
-var styleTags = map[ftml.InlineStyle]string{}
 
 func init() {
 	for tag, t := range wrapperElements {
 		elementTags[t] = tag
-	}
-
-	for tag, s := range inlineElements {
-		styleTags[s] = tag
 	}
 }
