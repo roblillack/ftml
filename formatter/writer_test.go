@@ -25,3 +25,26 @@ And this is the second one.
 		assert.Equal(t, res, buf.String())
 	}
 }
+
+func TestWordWrap(t *testing.T) {
+	doc, err := ftml.Parse(strings.NewReader("<p>FTML is text markup language which is designed to offer humans a way to express themselves better than plain text, but without the complexity of HTML, Markdown, or other document formats. An FTML file makes no assumptions about how the rendered text will look like, but only about the structure of the text. The format covers typical simple text documents, such as emails, memos, notes, online help, and is specifically suitable for copy-pasting text from one document to another.</p>"))
+	if err != nil {
+		t.Error(err)
+	}
+
+	//   ------------ 72 characters --------------------------------------------v
+	res := "" +
+		"FTML is text markup language which is designed to offer humans a way to \n" +
+		"express themselves better than plain text, but without the complexity of \n" +
+		"HTML, Markdown, or other document formats. An FTML file makes no \n" +
+		"assumptions about how the rendered text will look like, but only about \n" +
+		"the structure of the text. The format covers typical simple text \n" +
+		"documents, such as emails, memos, notes, online help, and is \n" +
+		"specifically suitable for copy-pasting text from one document to \n" +
+		"another.\n"
+	//   ------------ 72 characters --------------------------------------------^
+	buf := &bytes.Buffer{}
+	if assert.NoError(t, Write(buf, doc, false)) {
+		assert.Equal(t, res, buf.String())
+	}
+}

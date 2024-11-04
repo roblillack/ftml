@@ -106,11 +106,7 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 
 			nextWs := strings.IndexAny(span.Text[pos:], " \t\n")
 			if nextWs == -1 {
-				if _, err := io.WriteString(f.Writer, span.Text[pos:]); err != nil {
-					return length, err
-				}
-				length += len([]rune(span.Text[pos:]))
-				break
+				nextWs = len(span.Text) - pos
 			}
 
 			word := span.Text[pos : pos+nextWs]

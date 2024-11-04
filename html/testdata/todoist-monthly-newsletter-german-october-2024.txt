@@ -1,5 +1,6 @@
 Mache realistische Pläne mit deinen Aufgaben und Terminen an einem Ort.
 
+
 ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿ ‌​‍‎‏﻿
 
 Im Browser anzeigen
@@ -10,8 +11,8 @@ Das Neueste aus dem Todoist-Versum – Oktober 2024
 
 Verwalte deine als Zeitblöcke geplanten Todoist-Aufgaben, z. B. 
 Kundenangebote durchgehen 14:00 für 2h oder Kitty von Tierärztin abholen 
-10:00 für 30m, indem du diese Aufgaben direkt mit deinem Google Kalender synchronisierst 
-– verfügbar bei allen Abonnement-Plänen!
+10:00 für 30m, indem du diese Aufgaben direkt mit deinem Google Kalender 
+synchronisierst – verfügbar bei allen Abonnement-Plänen!
 
 Deine To-dos und Termine an einem Ort
 
@@ -31,8 +32,8 @@ einzurichten (definitiv einfacher als Kitty in ihre Transportbox für den
 Tierarzttermin zu locken).
 
  • Wenn du es noch nicht getan hast, gehe zuerst zu den , um Todoist mit 
-   deinem Google Kalender-Konto zu verbinden. Klicke auf Google Kalender verbinden 
-   und folge den Anweisungen.
+   deinem Google Kalender-Konto zu verbinden. Klicke auf Google Kalender 
+   verbinden und folge den Anweisungen.
 
  • Sobald du mit Google Kalender verbunden bist, schalte unten in den 
    Kalender-Einstellungen den Kippschalter um, um die Option Aufgaben 
@@ -49,7 +50,8 @@ Fälligkeitsdatum und einer Uhrzeit oder Dauer mit deinem Google Kalender
 synchronisiert. Dies umfasst auch die dir zugewiesenen geplanten 
 Aufgaben in geteilten Projekten. Wenn sich deine Pläne ändern – was 
 immer mal passieren kann – kannst du Aufgaben bequem direkt im Google 
-Kalender umplanen, was unnötiges Hin-und-Her zwischen verschiedenen Apps erspart.
+Kalender umplanen, was unnötiges Hin-und-Her zwischen verschiedenen Apps 
+erspart.
 
 In unserem Help Center-Artikel findest du . Alternativ kannst du auch 
 das , in dem sie es ausführlich erklärt.
@@ -82,4 +84,5 @@ Mit produktiven Grüßen
 
 
 
-© Doist Inc. 2100 Geng Road, Suite 210 Palo Alto, CA 94303 Vereinigte Staaten
+© Doist Inc. 2100 Geng Road, Suite 210 Palo Alto, CA 94303 Vereinigte 
+Staaten
