@@ -48,7 +48,7 @@ func (p *parser) down(paraType ftml.ParagraphType) error {
 		return nil
 	}
 
-	content, err := readContent(p.Tokenizer, elementTags[paraType])
+	content, err := readContent(p.Tokenizer, paraType)
 	if err != nil {
 		return err
 	}
@@ -101,8 +101,11 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 
 		if t.Name() == "li" {
 			parent := p.parent()
-			if parent == nil ||
-				(parent.Type != ftml.UnorderedListParagraph && parent.Type != ftml.OrderedListParagraph) {
+			if parent == nil {
+				p.down(ftml.UnorderedListParagraph)
+				parent = p.parent()
+			}
+			if parent.Type != ftml.UnorderedListParagraph && parent.Type != ftml.OrderedListParagraph {
 				return fmt.Errorf("unexpected list item, parent: %v", parent)
 			}
 			parent.Entries = append(parent.Entries, []*ftml.Paragraph{})
@@ -115,10 +118,9 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 		}
 	} else if t, ok := token.(gockl.EndElementToken); ok {
 		if t.Name() == "li" {
-			if p.ListItemLevel < 1 {
-				return fmt.Errorf("unexpected closing tag for list item")
+			if p.ListItemLevel > 0 {
+				p.ListItemLevel--
 			}
-			p.ListItemLevel--
 			return nil
 		}
 
@@ -174,7 +176,7 @@ func readText(z *gockl.Tokenizer) (string, gockl.Token, error) {
 	}
 }
 
-func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle) (ftml.Span, error) {
+func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, currentPara ftml.ParagraphType) (ftml.Span, error) {
 	res := ftml.Span{Style: style, Children: []ftml.Span{}}
 
 	for {
@@ -182,15 +184,16 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle) (ftml.Span, error) {
 		if err != nil {
 			return res, err
 		}
-		if token == nil {
-			return res, fmt.Errorf("no closing tag for %s", style)
-		}
 		str = decodeEntities(collapseWhitespace(str, false, false))
 		if str != "" {
 			res.Children = append(res.Children, ftml.Span{Text: str})
 		}
+		if token == nil {
+			// return res, fmt.Errorf("no closing tag for %s", style)
+			return res, nil
+		}
 
-		if t, ok := token.(gockl.EmptyElementToken); ok && t.Name() == LineBreakElementName {
+		if t, ok := token.(gockl.StartOrEmptyElementToken); ok && t.Name() == LineBreakElementName {
 			res.Children = append(res.Children, ftml.Span{Text: "\n"})
 			continue
 		}
@@ -200,7 +203,7 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle) (ftml.Span, error) {
 			if !ok {
 				st = ftml.StyleNone
 			}
-			span, err := readSpan(z, st)
+			span, err := readSpan(z, st, currentPara)
 			if err != nil {
 				return res, err
 			}
@@ -210,6 +213,11 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle) (ftml.Span, error) {
 		}
 
 		if t, ok := token.(gockl.EndElementToken); ok && inlineElements[t.Name()] == style {
+			return res, nil
+		}
+
+		// Ok, let's just say that paragraph is done here, even if the span is still open
+		if t, ok := token.(gockl.EndElementToken); ok && wrapperElements[t.Name()] != currentPara {
 			return res, nil
 		}
 
@@ -306,7 +314,7 @@ func (b *bufferedSpanList) Close() []ftml.Span {
 	return b.Spans
 }
 
-func readContent(z *gockl.Tokenizer, endToken string) ([]ftml.Span, error) {
+func readContent(z *gockl.Tokenizer, paraType ftml.ParagraphType) ([]ftml.Span, error) {
 	res := newBufferedSpanList()
 
 	for {
@@ -318,11 +326,11 @@ func readContent(z *gockl.Tokenizer, endToken string) ([]ftml.Span, error) {
 			return res.Close(), err
 		}
 
-		if t, ok := token.(gockl.EndElementToken); ok && t.Name() == endToken {
+		if t, ok := token.(gockl.EndElementToken); ok && t.Name() == elementTags[paraType] {
 			return res.Close(), nil
 		}
 
-		if t, ok := token.(gockl.EmptyElementToken); ok && t.Name() == ftml.LineBreakElementName {
+		if t, ok := token.(gockl.StartOrEmptyElementToken); ok && t.Name() == ftml.LineBreakElementName {
 			res.AddLineBreak()
 			continue
 		}
@@ -339,7 +347,7 @@ func readContent(z *gockl.Tokenizer, endToken string) ([]ftml.Span, error) {
 			st = ftml.StyleNone
 		}
 
-		span, err := readSpan(z, st)
+		span, err := readSpan(z, st, paraType)
 		if err != nil {
 			return res.Close(), err
 		}

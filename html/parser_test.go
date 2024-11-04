@@ -142,7 +142,7 @@ func TestParsingInlineStyles(t *testing.T) {
 
 	for input, expected := range tests {
 		z := gockl.New(input + "</END>")
-		spans, err := readContent(z, "END")
+		spans, err := readContent(z, ftml.TextParagraph)
 		if assert.NoError(t, err) {
 			assert.Equal(t, spans, expected)
 		}
@@ -151,18 +151,20 @@ func TestParsingInlineStyles(t *testing.T) {
 
 func TestParsingInlineErrors(t *testing.T) {
 	tests := map[string]string{
-		`This is a <b>test</i>.</END>`:               "unexpected token",
-		`This is a <b> test.`:                        "unexpected eof",
-		`This is a <b> test.</END>`:                  "unexpected token",
-		`This is a <b><i>second</b> test</i>.</END>`: "unexpected token",
-		`This is a <b> test.<hr><b></END>`:           "unexpected token",
+		// Inline errors
+		`<p>This is a <b>test</i>.</p>`:               "<p>This is a <b>test.</b></p>",
+		`<p>This is a <b> test.`:                      `<p>This is a <b> test.</b></p>`,
+		`<p>This is a <b> test.</p>`:                  `<p>This is a <b> test.</b></p>`,
+		`<p>This is a <b><i>second</b> test</i>.</p>`: `<p>This is a <b><i>second test</i>.</b></p>`,
+		`<p>This is a <b> test.<hr><b></p>`:           `<p>This is a <b> test.</b></p>`,
 	}
-
-	for input, expectedErrMsg := range tests {
-		z := gockl.New(input)
-		_, err := readContent(z, "END")
-		if assert.Error(t, err) {
-			assert.Contains(t, strings.ToLower(err.Error()), expectedErrMsg)
+	for input, expected := range tests {
+		res, err := Parse(strings.NewReader(input))
+		if assert.NoError(t, err) {
+			buf := &strings.Builder{}
+			assert.NoError(t, ftml.Write(buf, res))
+			result := strings.TrimSpace(buf.String())
+			assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
 		}
 	}
 }
