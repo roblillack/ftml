@@ -158,6 +158,8 @@ func TestParsingInlineErrors(t *testing.T) {
 		`<p>This is a <b><i>second</b> test</i>.</p>`:                  `<p>This is a <b><i>second test</i>.</b></p>`,
 		`<p>This is a <b> test.<hr><b></p>`:                            `<p>This is a <b> test.</b></p>`,
 		`<p>This is a <b><a href="asdasdasd">second</a> test</b>.</p>`: `<p>This is a <b>second test</b>.</p>`,
+		`<p>This is a &copy;.</p>`:                                     `<p>This is a ©.</p>`,
+		`<footer><div>This is a &copy;.</div></footer>`:                `<p>This is a ©.</p>`,
 	}
 	for input, expected := range tests {
 		res, err := Parse(strings.NewReader(input))

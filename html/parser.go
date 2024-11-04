@@ -3,6 +3,7 @@ package html
 import (
 	"bytes"
 	"fmt"
+	"html"
 	"io"
 	"regexp"
 	"strings"
@@ -128,7 +129,7 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 			return p.up(paraType)
 		}
 	} else if t, ok := token.(gockl.TextToken); ok {
-		txt := strings.TrimSpace(t.Raw())
+		txt := html.UnescapeString(strings.TrimSpace(t.Raw()))
 		if txt == "" {
 			return nil
 		}
@@ -184,7 +185,7 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, endTag string, current
 		if err != nil {
 			return res, err
 		}
-		str = decodeEntities(collapseWhitespace(str, false, false))
+		str = html.UnescapeString(collapseWhitespace(str, false, false))
 		if str != "" {
 			res.Children = append(res.Children, ftml.Span{Text: str})
 		}
@@ -281,7 +282,7 @@ func newBufferedSpanList() *bufferedSpanList {
 func (b *bufferedSpanList) flush() {
 	if b.Buffer != "" {
 		b.Spans = append(b.Spans, ftml.Span{
-			Text: decodeEntities(collapseWhitespace(b.Buffer, b.First, b.TrimEnd)),
+			Text: html.UnescapeString(collapseWhitespace(b.Buffer, b.First, b.TrimEnd)),
 		})
 		b.Buffer = ""
 		b.First = false
