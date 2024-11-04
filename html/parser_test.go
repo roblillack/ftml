@@ -142,7 +142,7 @@ func TestParsingInlineStyles(t *testing.T) {
 
 	for input, expected := range tests {
 		z := gockl.New(input + "</END>")
-		spans, err := readContent(z, ftml.TextParagraph)
+		spans, err := readContent(z, "END", ftml.TextParagraph)
 		if assert.NoError(t, err) {
 			assert.Equal(t, spans, expected)
 		}
@@ -152,11 +152,12 @@ func TestParsingInlineStyles(t *testing.T) {
 func TestParsingInlineErrors(t *testing.T) {
 	tests := map[string]string{
 		// Inline errors
-		`<p>This is a <b>test</i>.</p>`:               "<p>This is a <b>test.</b></p>",
-		`<p>This is a <b> test.`:                      `<p>This is a <b> test.</b></p>`,
-		`<p>This is a <b> test.</p>`:                  `<p>This is a <b> test.</b></p>`,
-		`<p>This is a <b><i>second</b> test</i>.</p>`: `<p>This is a <b><i>second test</i>.</b></p>`,
-		`<p>This is a <b> test.<hr><b></p>`:           `<p>This is a <b> test.</b></p>`,
+		`<p>This is a <b>test</i>.</p>`:                                "<p>This is a <b>test.</b></p>",
+		`<p>This is a <b> test.`:                                       `<p>This is a <b> test.</b></p>`,
+		`<p>This is a <b> test.</p>`:                                   `<p>This is a <b> test.</b></p>`,
+		`<p>This is a <b><i>second</b> test</i>.</p>`:                  `<p>This is a <b><i>second test</i>.</b></p>`,
+		`<p>This is a <b> test.<hr><b></p>`:                            `<p>This is a <b> test.</b></p>`,
+		`<p>This is a <b><a href="asdasdasd">second</a> test</b>.</p>`: `<p>This is a <b>second test</b>.</p>`,
 	}
 	for input, expected := range tests {
 		res, err := Parse(strings.NewReader(input))

@@ -115,7 +115,7 @@ func (o *output) writeSpan(span Span, level int, first, last bool) error {
 		indent += o.Indentation
 	}
 
-	if span.Style == StyleNone {
+	if span.Style == StyleNone && len(span.Children) == 0 {
 		txt := encodeEntities(span.Text, first, last)
 		txt = strings.ReplaceAll(txt, "\n", LineBreakElement+"\n")
 		// if last {
@@ -149,21 +149,25 @@ func (o *output) writeSpan(span Span, level int, first, last bool) error {
 }
 
 func simpleWriteSpan(o io.StringWriter, span Span, first, last bool) error {
-	if tag, ok := styleTags[span.Style]; ok {
-		if _, err := o.WriteString("<" + tag + ">"); err != nil {
-			return err
-		}
+	if len(span.Children) > 0 {
+		tag, ok := styleTags[span.Style]
 
+		if ok {
+			if _, err := o.WriteString("<" + tag + ">"); err != nil {
+				return err
+			}
+		}
 		for _, child := range span.Children {
 			if err := simpleWriteSpan(o, child, false, false); err != nil {
 				return err
 			}
 		}
 
-		if _, err := o.WriteString("</" + tag + ">"); err != nil {
-			return err
+		if ok {
+			if _, err := o.WriteString("</" + tag + ">"); err != nil {
+				return err
+			}
 		}
-
 		return nil
 	}
 

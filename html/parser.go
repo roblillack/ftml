@@ -48,7 +48,7 @@ func (p *parser) down(paraType ftml.ParagraphType) error {
 		return nil
 	}
 
-	content, err := readContent(p.Tokenizer, paraType)
+	content, err := readContent(p.Tokenizer, elementTags[paraType], paraType)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func readText(z *gockl.Tokenizer) (string, gockl.Token, error) {
 	}
 }
 
-func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, currentPara ftml.ParagraphType) (ftml.Span, error) {
+func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, endTag string, currentPara ftml.ParagraphType) (ftml.Span, error) {
 	res := ftml.Span{Style: style, Children: []ftml.Span{}}
 
 	for {
@@ -203,7 +203,7 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, currentPara ftml.Parag
 			if !ok {
 				st = ftml.StyleNone
 			}
-			span, err := readSpan(z, st, currentPara)
+			span, err := readSpan(z, st, t.Name(), currentPara)
 			if err != nil {
 				return res, err
 			}
@@ -212,7 +212,7 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, currentPara ftml.Parag
 
 		}
 
-		if t, ok := token.(gockl.EndElementToken); ok && inlineElements[t.Name()] == style {
+		if t, ok := token.(gockl.EndElementToken); ok && t.Name() == endTag {
 			return res, nil
 		}
 
@@ -314,7 +314,7 @@ func (b *bufferedSpanList) Close() []ftml.Span {
 	return b.Spans
 }
 
-func readContent(z *gockl.Tokenizer, paraType ftml.ParagraphType) ([]ftml.Span, error) {
+func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType) ([]ftml.Span, error) {
 	res := newBufferedSpanList()
 
 	for {
@@ -326,7 +326,7 @@ func readContent(z *gockl.Tokenizer, paraType ftml.ParagraphType) ([]ftml.Span, 
 			return res.Close(), err
 		}
 
-		if t, ok := token.(gockl.EndElementToken); ok && t.Name() == elementTags[paraType] {
+		if t, ok := token.(gockl.EndElementToken); ok && t.Name() == endTag {
 			return res.Close(), nil
 		}
 
@@ -335,19 +335,26 @@ func readContent(z *gockl.Tokenizer, paraType ftml.ParagraphType) ([]ftml.Span, 
 			continue
 		}
 
+		// ignore processing instructions, comments, empty elements ...
+
 		t, ok := token.(gockl.StartElementToken)
 		if !ok {
 			continue
 			// return res.Close(), fmt.Errorf("unexpected token type: %v", token)
 		}
 
+		if _, ok := skipTags[t.Name()]; ok {
+			continue
+		}
+
 		st, ok := inlineElements[t.Name()]
 		if !ok {
 			// return res.Close(), fmt.Errorf("non-inline token: %v", token)
+			log.Printf("readContent: reading unknown token: %s now\n", t.Name())
 			st = ftml.StyleNone
 		}
 
-		span, err := readSpan(z, st, paraType)
+		span, err := readSpan(z, st, t.Name(), paraType)
 		if err != nil {
 			return res.Close(), err
 		}

@@ -29,7 +29,7 @@ func writeSpan(w io.Writer, span ftml.Span) error {
 		}
 	}
 
-	if span.Style == ftml.StyleNone {
+	if span.Style == ftml.StyleNone && len(span.Children) == 0 {
 		if _, err := io.WriteString(w, span.Text); err != nil {
 			return err
 		}
