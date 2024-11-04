@@ -31,9 +31,9 @@ How it works
 Syncing tasks to Google Calendar is incredibly easy to set up (easier 
 than, say, coaxing Garfield into the car for his vet appointment).
 
- • If you haven’t done so already, first head to  to connect Todoist to 
-   your Google Calendar account. Click Connect Google Calendar and 
-   follow the flow.
+ • If you haven’t done so already, first head to Calendar settings to 
+   connect Todoist to your Google Calendar account. Click Connect Google 
+   Calendar and follow the flow.
 
  • Once you’re connected to Google Calendar, flip the toggle at the 
    bottom of Calendar settings to enable the Sync tasks to calendar 
@@ -51,7 +51,8 @@ have been assigned to you. And when plans change – as they inevitably do
 – you can conveniently reschedule your tasks directly from Google 
 Calendar, saving you from unnecessary app hopping.
 
-Check out our help center article for . (Or,  – she explains it 
+Check out our help center article for more details on syncing Todoist 
+with Google Calendar. (Or, watch Francesca’s demo – she explains it 
 thoroughly halfway through.)
 
 See your tasks turn into triumphs
@@ -70,15 +71,16 @@ enthusiasts. We’ll also be exploring ways to display completed tasks
 within the calendar layout in Todoist, so you can easily track your 
 achievements over time.
 
-In the meantime, . We’d love to hear from you as we continue to refine 
-the calendar experience in Todoist.
+In the meantime, let us know what you think of the new Sync tasks 
+feature. We’d love to hear from you as we continue to refine the 
+calendar experience in Todoist.
 
 See you next month! 👋
 
 Productively,
 
-   |      |   
+Inspiration Hub   |   Download Apps   |   Help Center
 
-
+Unsubscribe
 
 © Doist Inc. 2100 Geng Road, Suite 210 Palo Alto, CA 94303 US

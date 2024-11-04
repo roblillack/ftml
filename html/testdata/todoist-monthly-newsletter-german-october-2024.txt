@@ -31,9 +31,10 @@ Die Synchronisierung von Aufgaben mit Google Kalender ist kinderleicht
 einzurichten (definitiv einfacher als Kitty in ihre Transportbox für den 
 Tierarzttermin zu locken).
 
- • Wenn du es noch nicht getan hast, gehe zuerst zu den , um Todoist mit 
-   deinem Google Kalender-Konto zu verbinden. Klicke auf Google Kalender 
-   verbinden und folge den Anweisungen.
+ • Wenn du es noch nicht getan hast, gehe zuerst zu den 
+   Kalender-Einstellungen, um Todoist mit deinem Google Kalender-Konto 
+   zu verbinden. Klicke auf Google Kalender verbinden und folge den 
+   Anweisungen.
 
  • Sobald du mit Google Kalender verbunden bist, schalte unten in den 
    Kalender-Einstellungen den Kippschalter um, um die Option Aufgaben 
@@ -53,8 +54,9 @@ immer mal passieren kann – kannst du Aufgaben bequem direkt im Google
 Kalender umplanen, was unnötiges Hin-und-Her zwischen verschiedenen Apps 
 erspart.
 
-In unserem Help Center-Artikel findest du . Alternativ kannst du auch 
-das , in dem sie es ausführlich erklärt.
+In unserem Help Center-Artikel findest du weitere Details zur 
+Synchronisierung von Todoist mit Google Kalender. Alternativ kannst du 
+auch das Video von Francesca ansehen, in dem sie es ausführlich erklärt.
 
 Erlebe, wie deine Aufgaben zu Triumphen werden
 
@@ -73,16 +75,17 @@ wir Möglichkeiten erkunden, erledigte Aufgaben im Kalender-Layout von
 Todoist anzuzeigen, damit du deine Erfolge im Laufe der Zeit mühelos 
 verfolgen kannst.
 
-In der Zwischenzeit, . Wir freuen uns auf dein Feedback, während wir das 
-Kalendererlebnis in Todoist weiter verbessern.
+In der Zwischenzeit, lass uns wissen, was du von dem neuen Feature zur 
+Aufgaben-Synchronisierung hältst. Wir freuen uns auf dein Feedback, 
+während wir das Kalendererlebnis in Todoist weiter verbessern.
 
 Bis nächsten Monat! 👋
 
 Mit produktiven Grüßen
 
-   |      |   
+Inspiration Hub   |   Apps herunterladen   |   Help Center
 
-
+Abbestellen
 
 © Doist Inc. 2100 Geng Road, Suite 210 Palo Alto, CA 94303 Vereinigte 
 Staaten
