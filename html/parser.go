@@ -350,7 +350,6 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType)
 		st, ok := inlineElements[t.Name()]
 		if !ok {
 			// return res.Close(), fmt.Errorf("non-inline token: %v", token)
-			log.Printf("readContent: reading unknown token: %s now\n", t.Name())
 			st = ftml.StyleNone
 		}
 
