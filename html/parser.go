@@ -38,7 +38,12 @@ func (p *parser) down(paraType ftml.ParagraphType) (*ftml.Paragraph, error) {
 		if parent.Type == ftml.UnorderedListParagraph || parent.Type == ftml.OrderedListParagraph {
 			pos := len(parent.Entries) - 1
 			if pos < 0 {
-				return nil, fmt.Errorf("paragraph content for list without list item")
+				// Paragraph content for list without list item here? Don't
+				// really know what the standard says, but we're pretty much
+				// in uncharted territory here, as this will not be supported
+				// by FTML. My current solution is to make up an entry.
+				parent.Entries = [][]*ftml.Paragraph{[]*ftml.Paragraph{}}
+				pos = 0
 			}
 			parent.Entries[pos] = append(parent.Entries[pos], para)
 		} else {
@@ -86,7 +91,8 @@ func (p *parser) readParagraph(paraType ftml.ParagraphType, endTag string) error
 func (p *parser) up(t ftml.ParagraphType) error {
 	current := p.parent()
 	if current == nil {
-		return fmt.Errorf("closing unopened paragraph of type %v", t)
+		// Never opened that paragraph? Nevermind.
+		return nil
 	}
 	if current.Type != t {
 		return fmt.Errorf("cannot close %v with %v", current.Type, t)
