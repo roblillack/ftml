@@ -22,12 +22,14 @@ type parser struct {
 	SkipStack     []string
 }
 
-func (p *parser) down(paraType ftml.ParagraphType, endTag string) error {
+// down creates a new paragraph of the given type, adds it at the current
+// position in the document and returns it.
+func (p *parser) down(paraType ftml.ParagraphType) (*ftml.Paragraph, error) {
 	para := &ftml.Paragraph{Type: paraType}
 
 	parent := p.parent()
 	if parent != nil && parent.Leaf() {
-		return fmt.Errorf("paragraphs not allowed inside leaf paragraph nodes when trying to add %s below %s", paraType, parent.Type)
+		return nil, fmt.Errorf("paragraphs not allowed inside leaf paragraph nodes when trying to add %s below %s", paraType, parent.Type)
 	}
 
 	if parent == nil {
@@ -36,7 +38,7 @@ func (p *parser) down(paraType ftml.ParagraphType, endTag string) error {
 		if parent.Type == ftml.UnorderedListParagraph || parent.Type == ftml.OrderedListParagraph {
 			pos := len(parent.Entries) - 1
 			if pos < 0 {
-				return fmt.Errorf("paragraph content for list without list item")
+				return nil, fmt.Errorf("paragraph content for list without list item")
 			}
 			parent.Entries[pos] = append(parent.Entries[pos], para)
 		} else {
@@ -46,19 +48,27 @@ func (p *parser) down(paraType ftml.ParagraphType, endTag string) error {
 
 	if !para.Leaf() {
 		p.Breadcrumbs = append(p.Breadcrumbs, para)
-		return nil
 	}
 
-	content, nextTag, err := readContent(p.Tokenizer, endTag, paraType)
+	return para, nil
+}
+
+func (p *parser) readParagraph(paraType ftml.ParagraphType, endTag string) error {
+	para, err := p.down(paraType)
+	if err != nil {
+		return err
+	}
+
+	content, extraToken, err := readContent(p.Tokenizer, endTag, paraType)
 	if err != nil {
 		return err
 	}
 	para.Content = content
 
-	if nextTag != "" {
-		if nextPara, ok := paragraphElement[nextTag]; ok {
-			return p.down(nextPara, endTag)
-		}
+	if extraToken != nil {
+		// TODO: Might get a little recursive here, implement method of
+		// "unreading" tokens?
+		return p.ProcessToken(extraToken)
 	}
 
 	return nil
@@ -109,8 +119,11 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 		if t.Name() == "li" {
 			parent := p.parent()
 			if parent == nil {
-				p.down(ftml.UnorderedListParagraph, "ul")
-				parent = p.parent()
+				if newP, err := p.down(ftml.UnorderedListParagraph); err != nil {
+					return err
+				} else {
+					parent = newP
+				}
 			}
 			if parent.Type != ftml.UnorderedListParagraph && parent.Type != ftml.OrderedListParagraph {
 				return fmt.Errorf("unexpected list item, parent: %v", parent)
@@ -121,7 +134,7 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 		}
 
 		if paraType, ok := paragraphElement[t.Name()]; ok {
-			return p.down(paraType, t.Name())
+			return p.readParagraph(paraType, t.Name())
 		}
 	} else if t, ok := token.(gockl.EndElementToken); ok {
 		if t.Name() == "li" {
@@ -140,10 +153,11 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 			return nil
 		}
 		// return fmt.Errorf("unexpected text content: %s", txt)
-		p.Doc.Paragraphs = append(p.Doc.Paragraphs, &ftml.Paragraph{
-			Type:    ftml.TextParagraph,
-			Content: []ftml.Span{{Text: txt}},
-		})
+		para, err := p.down(ftml.TextParagraph)
+		if err != nil {
+			return err
+		}
+		para.Content = []ftml.Span{{Text: txt}}
 		return nil
 	}
 
@@ -333,7 +347,7 @@ func (b *bufferedSpanList) Close() []ftml.Span {
 	return b.Spans
 }
 
-func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType) ([]ftml.Span, string, error) {
+func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType) ([]ftml.Span, gockl.Token, error) {
 	res := newBufferedSpanList()
 
 	for {
@@ -342,11 +356,11 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType)
 			res.AddText(str)
 		}
 		if err != nil || token == nil {
-			return res.Close(), "", err
+			return res.Close(), nil, err
 		}
 
 		if t, ok := token.(gockl.EndElementToken); ok && t.Name() == endTag {
-			return res.Close(), "", nil
+			return res.Close(), nil, nil
 		}
 
 		if t, ok := token.(gockl.StartOrEmptyElementToken); ok && t.Name() == ftml.LineBreakElementName {
@@ -356,14 +370,14 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType)
 
 		if t, ok := token.(gockl.StartOrEmptyElementToken); ok {
 			if _, ok := blockLevelElements[t.Name()]; ok {
-				return res.Close(), t.Name(), nil
+				return res.Close(), token, nil
 			}
 		}
 
 		// We're ending the wrong block level element here?, let's just assume that the paragraph is done
 		if t, ok := token.(gockl.EndElementToken); ok {
 			if _, ok := blockLevelElements[t.Name()]; ok {
-				return res.Close(), "", nil
+				return res.Close(), token, nil
 			}
 		}
 
@@ -387,7 +401,7 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType)
 
 		span, err := readSpan(z, st, t.Name(), paraType)
 		if err != nil {
-			return res.Close(), "", err
+			return res.Close(), nil, err
 		}
 
 		res.Add(span)

@@ -182,6 +182,32 @@ func TestUnclosedBlockElements(t *testing.T) {
 	}
 }
 
+func TestUnclosedListItems(t *testing.T) {
+	input := `<p>Oh,<li>Hello<li>World`
+	expected := "<p>Oh,</p>\n\n<ul>\n  <li>\n    <p>Hello</p>\n  </li>\n\n  <li>\n    <p>World</p>\n  </li>\n</ul>"
+	res, err := Parse(strings.NewReader(input))
+	if assert.NoError(t, err) {
+		buf := &strings.Builder{}
+		assert.NoError(t, ftml.Write(buf, res))
+		result := strings.TrimSpace(buf.String())
+		assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
+
+	}
+}
+
+func TestListItemsWithoutParagraphs(t *testing.T) {
+	input := `<li>Hello</li><li>World</li>`
+	expected := "<ul>\n  <li>\n    <p>Hello</p>\n  </li>\n\n  <li>\n    <p>World</p>\n  </li>\n</ul>"
+	res, err := Parse(strings.NewReader(input))
+	if assert.NoError(t, err) {
+		buf := &strings.Builder{}
+		assert.NoError(t, ftml.Write(buf, res))
+		result := strings.TrimSpace(buf.String())
+		assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
+
+	}
+}
+
 func TestParsingErrors(t *testing.T) {
 	tests := map[string]string{
 		`This is a test.`:              "unexpected text content",
