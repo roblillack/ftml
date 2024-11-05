@@ -21,6 +21,10 @@ func CompareDoc(t *testing.T, doc *ftml.Document, snapshotFile string) {
 	}
 	actual := buf.Bytes()
 
+	if err := os.Remove(snapshotFile + ".new"); err != nil && !os.IsNotExist(err) {
+		t.Fatalf("Unable to remove old snapshot: %s", err)
+	}
+
 	haveError := func(layout string, args ...interface{}) {
 		out, err := os.Create(snapshotFile + ".new")
 		if err == nil {

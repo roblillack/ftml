@@ -133,13 +133,14 @@ func TestParsingAndWritingStyles(t *testing.T) {
 func TestParsingInlineStyles(t *testing.T) {
 	tests := map[string][]ftml.Span{
 		`This is a <b>test</b>.`:               {span("This is a "), b__("test"), span(".")},
+		`This is a <strong>test</strong>.`:     {span("This is a "), b__("test"), span(".")},
 		`This is a <b> test </b>.`:             {span("This is a "), b__(" test "), span(".")},
 		`This is a <b><i>second</i> test</b>.`: {span("This is a "), b_(i__("second"), span(" test")), span(".")},
 	}
 
 	for input, expected := range tests {
 		z := gockl.New(input + "</END>")
-		spans, nextPara, err := readContent(z, "END", ftml.TextParagraph)
+		spans, nextPara, err := readContent(z, "END", ftml.TextParagraph, "")
 		assert.Empty(t, nextPara)
 		if assert.NoError(t, err) {
 			assert.Equal(t, spans, expected)
@@ -212,6 +213,32 @@ func TestListItemsWithoutParagraphs(t *testing.T) {
 func TestBlockquoteWithoutParagraph(t *testing.T) {
 	input := `<blockquote>Hello World`
 	expected := "<blockquote>\n  <p>Hello World</p>\n</blockquote>"
+	res, err := Parse(strings.NewReader(input))
+	if assert.NoError(t, err) {
+		buf := &strings.Builder{}
+		assert.NoError(t, ftml.Write(buf, res))
+		result := strings.TrimSpace(buf.String())
+		assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
+
+	}
+}
+
+func TestParsingLinks(t *testing.T) {
+	input := `<ul><li><a href="xxx">Hello</a> World`
+	expected := "<ul>\n  <li>\n    <p>Hello World</p>\n  </li>\n</ul>"
+	res, err := Parse(strings.NewReader(input))
+	if assert.NoError(t, err) {
+		buf := &strings.Builder{}
+		assert.NoError(t, ftml.Write(buf, res))
+		result := strings.TrimSpace(buf.String())
+		assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
+
+	}
+}
+
+func TestParsingInlineStylesInListItems(t *testing.T) {
+	input := `<li>Hello <strong>World`
+	expected := "<ul>\n  <li>\n    <p>Hello <b>World</b></p>\n  </li>\n</ul>"
 	res, err := Parse(strings.NewReader(input))
 	if assert.NoError(t, err) {
 		buf := &strings.Builder{}
