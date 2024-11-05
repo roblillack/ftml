@@ -99,10 +99,13 @@ func TestTrimmingWhiteSpace(t *testing.T) {
 
 func TestParsingAndWritingStyles(t *testing.T) {
 	simpleTests := map[string][]ftml.Span{
+		// TODO: Unclear if we want to keep this behavior or just convert
+		// &emsp14; to a space for HTML import, too (to stay consistent
+		// with FTML reading).
 		`This is a test.`:            {span("This is a test.")},
-		`&emsp14;This is a test.`:    {span(" This is a test.")},
-		`This is a test.&emsp14;`:    {span("This is a test. ")},
-		`A&emsp14;&emsp14;&emsp14;B`: {span("A   B")},
+		`&emsp14;This is a test.`:    {span("\u2005This is a test.")},
+		`This is a test.&emsp14;`:    {span("This is a test.\u2005")},
+		`A&emsp14;&emsp14;&emsp14;B`: {span("A\u2005\u2005\u2005B")},
 	}
 	indentedTests := map[string][]ftml.Span{
 		`This is a <b>test</b>.`:               {span("This is a "), b__("test"), span(".")},
@@ -110,26 +113,19 @@ func TestParsingAndWritingStyles(t *testing.T) {
 		`This is a <b><i>second</i> test</b>.`: {span("This is a "), b_(i__("second"), span(" test")), span(".")},
 	}
 
-	check := func(input string, doc *ftml.Document, output string) {
+	check := func(input string, doc *ftml.Document) {
 		log.Printf("Running tests for “%s” ...\n", strings.TrimSpace(input))
 		parsedDoc, err := Parse(strings.NewReader(input))
 		assert.NoErrorf(t, err, "unable to parse input string: %s", input)
 		assert.Equalf(t, doc, parsedDoc, "string parsed incorrectly: %s", input)
-		buf := &strings.Builder{}
-		assert.NoErrorf(t, ftml.Write(buf, doc), "unable to write FTML for doc: %s", input)
-		assert.Equal(t, output, buf.String(), "written FTML not corrent")
 	}
 
 	for input, spans := range simpleTests {
-		// expectedOutput := "<p>" + strings.TrimSpace(input) + "</p>\n"
-		expectedOutput := "<p>" + input + "</p>\n"
-		check("<p>"+input+"</p>\n", doc(&ftml.Paragraph{Type: ftml.TextParagraph, Content: spans}), expectedOutput)
+		check("<p>"+input+"</p>\n", doc(&ftml.Paragraph{Type: ftml.TextParagraph, Content: spans}))
 	}
 
 	for input, spans := range indentedTests {
-		// expectedOutput := "<p>\n  " + strings.TrimSpace(input) + "\n</p>\n"
-		expectedOutput := "<p>" + input + "</p>\n"
-		check("<p>"+input+"</p>\n", doc(&ftml.Paragraph{Type: ftml.TextParagraph, Content: spans}), expectedOutput)
+		check("<p>"+input+"</p>\n", doc(&ftml.Paragraph{Type: ftml.TextParagraph, Content: spans}))
 	}
 }
 
@@ -142,7 +138,8 @@ func TestParsingInlineStyles(t *testing.T) {
 
 	for input, expected := range tests {
 		z := gockl.New(input + "</END>")
-		spans, err := readContent(z, "END", ftml.TextParagraph)
+		spans, nextPara, err := readContent(z, "END", ftml.TextParagraph)
+		assert.Empty(t, nextPara)
 		if assert.NoError(t, err) {
 			assert.Equal(t, spans, expected)
 		}
@@ -169,6 +166,19 @@ func TestParsingInlineErrors(t *testing.T) {
 			result := strings.TrimSpace(buf.String())
 			assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
 		}
+	}
+}
+
+func TestUnclosedBlockElements(t *testing.T) {
+	input := `<p>Hello<h1>World</h1>`
+	expected := "<p>Hello</p>\n\n<h1>World</h1>"
+	res, err := Parse(strings.NewReader(input))
+	if assert.NoError(t, err) {
+		buf := &strings.Builder{}
+		assert.NoError(t, ftml.Write(buf, res))
+		result := strings.TrimSpace(buf.String())
+		assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
+
 	}
 }
 

@@ -13,7 +13,7 @@ var skipTags = map[string]struct{}{
 	"script": {},
 }
 
-var wrapperElements = map[string]ftml.ParagraphType{
+var paragraphElement = map[string]ftml.ParagraphType{
 	// Contains text
 	"p":  ftml.TextParagraph,
 	"h1": ftml.Header1Paragraph,
@@ -37,10 +37,15 @@ var inlineElements = map[string]ftml.InlineStyle{
 	"code":   ftml.StyleCode,
 }
 
-var elementTags = map[ftml.ParagraphType]string{}
-
-func init() {
-	for tag, t := range wrapperElements {
-		elementTags[t] = tag
-	}
+var blockLevelElements = map[string]struct{}{
+	"p":          {},
+	"h1":         {},
+	"h2":         {},
+	"h3":         {},
+	"blockquote": {},
+	"ul":         {},
+	"ol":         {},
+	"hr":         {},
+	"div":        {},
+	"li":         {},
 }

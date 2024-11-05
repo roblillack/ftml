@@ -21,11 +21,6 @@ func CompareDoc(t *testing.T, doc *ftml.Document, snapshotFile string) {
 	}
 	actual := buf.Bytes()
 
-	expected, err := os.ReadFile(snapshotFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	haveError := func(layout string, args ...interface{}) {
 		out, err := os.Create(snapshotFile + ".new")
 		if err == nil {
@@ -36,6 +31,11 @@ func CompareDoc(t *testing.T, doc *ftml.Document, snapshotFile string) {
 			t.Errorf("%s\nUnable to write new snapshot: %s", fmt.Sprintf(layout, args...), err)
 		}
 		t.Errorf("%s\nNew snapshot written to %s", fmt.Sprintf(layout, args...), snapshotFile+".new")
+	}
+
+	expected, err := os.ReadFile(snapshotFile)
+	if err != nil {
+		haveError("Unable to read snapshot: %s", err)
 	}
 
 	e := strings.Split(string(expected), "\n")

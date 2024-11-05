@@ -22,7 +22,7 @@ type parser struct {
 	SkipStack     []string
 }
 
-func (p *parser) down(paraType ftml.ParagraphType) error {
+func (p *parser) down(paraType ftml.ParagraphType, endTag string) error {
 	para := &ftml.Paragraph{Type: paraType}
 
 	parent := p.parent()
@@ -49,11 +49,17 @@ func (p *parser) down(paraType ftml.ParagraphType) error {
 		return nil
 	}
 
-	content, err := readContent(p.Tokenizer, elementTags[paraType], paraType)
+	content, nextTag, err := readContent(p.Tokenizer, endTag, paraType)
 	if err != nil {
 		return err
 	}
 	para.Content = content
+
+	if nextTag != "" {
+		if nextPara, ok := paragraphElement[nextTag]; ok {
+			return p.down(nextPara, endTag)
+		}
+	}
 
 	return nil
 }
@@ -103,7 +109,7 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 		if t.Name() == "li" {
 			parent := p.parent()
 			if parent == nil {
-				p.down(ftml.UnorderedListParagraph)
+				p.down(ftml.UnorderedListParagraph, "ul")
 				parent = p.parent()
 			}
 			if parent.Type != ftml.UnorderedListParagraph && parent.Type != ftml.OrderedListParagraph {
@@ -114,8 +120,8 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 			return nil
 		}
 
-		if paraType, ok := wrapperElements[t.Name()]; ok {
-			return p.down(paraType)
+		if paraType, ok := paragraphElement[t.Name()]; ok {
+			return p.down(paraType, t.Name())
 		}
 	} else if t, ok := token.(gockl.EndElementToken); ok {
 		if t.Name() == "li" {
@@ -125,7 +131,7 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 			return nil
 		}
 
-		if paraType, ok := wrapperElements[t.Name()]; ok {
+		if paraType, ok := paragraphElement[t.Name()]; ok {
 			return p.up(paraType)
 		}
 	} else if t, ok := token.(gockl.TextToken); ok {
@@ -199,7 +205,17 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, endTag string, current
 			continue
 		}
 
+		if t, ok := token.(gockl.EndElementToken); ok {
+			if _, ok := blockLevelElements[t.Name()]; ok {
+				return res, nil
+			}
+		}
+
 		if t, ok := token.(gockl.StartElementToken); ok {
+			if _, ok := blockLevelElements[t.Name()]; ok {
+				return res, nil
+			}
+
 			st, ok := inlineElements[t.Name()]
 			if !ok {
 				st = ftml.StyleNone
@@ -218,8 +234,10 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, endTag string, current
 		}
 
 		// Ok, let's just say that paragraph is done here, even if the span is still open
-		if t, ok := token.(gockl.EndElementToken); ok && wrapperElements[t.Name()] != currentPara {
-			return res, nil
+		if t, ok := token.(gockl.EndElementToken); ok {
+			if _, ok := blockLevelElements[t.Name()]; ok {
+				return res, nil
+			}
 		}
 
 		// ignore processing instructions, comments ...
@@ -315,7 +333,7 @@ func (b *bufferedSpanList) Close() []ftml.Span {
 	return b.Spans
 }
 
-func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType) ([]ftml.Span, error) {
+func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType) ([]ftml.Span, string, error) {
 	res := newBufferedSpanList()
 
 	for {
@@ -324,16 +342,29 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType)
 			res.AddText(str)
 		}
 		if err != nil || token == nil {
-			return res.Close(), err
+			return res.Close(), "", err
 		}
 
 		if t, ok := token.(gockl.EndElementToken); ok && t.Name() == endTag {
-			return res.Close(), nil
+			return res.Close(), "", nil
 		}
 
 		if t, ok := token.(gockl.StartOrEmptyElementToken); ok && t.Name() == ftml.LineBreakElementName {
 			res.AddLineBreak()
 			continue
+		}
+
+		if t, ok := token.(gockl.StartOrEmptyElementToken); ok {
+			if _, ok := blockLevelElements[t.Name()]; ok {
+				return res.Close(), t.Name(), nil
+			}
+		}
+
+		// We're ending the wrong block level element here?, let's just assume that the paragraph is done
+		if t, ok := token.(gockl.EndElementToken); ok {
+			if _, ok := blockLevelElements[t.Name()]; ok {
+				return res.Close(), "", nil
+			}
 		}
 
 		// ignore processing instructions, comments, empty elements ...
@@ -356,7 +387,7 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType)
 
 		span, err := readSpan(z, st, t.Name(), paraType)
 		if err != nil {
-			return res.Close(), err
+			return res.Close(), "", err
 		}
 
 		res.Add(span)
