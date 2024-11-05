@@ -115,7 +115,14 @@ func (o *output) writeSpan(span Span, level int, first, last bool) error {
 		indent += o.Indentation
 	}
 
-	if span.Style == StyleNone && len(span.Children) == 0 {
+	tag, ok := styleTags[span.Style]
+	if ok {
+		if err := o.Emit("<"+tag+">", level); err != nil {
+			return err
+		}
+	}
+
+	if len(span.Children) == 0 {
 		txt := encodeEntities(span.Text, first, last)
 		txt = strings.ReplaceAll(txt, "\n", LineBreakElement+"\n")
 		// if last {
@@ -124,28 +131,25 @@ func (o *output) writeSpan(span Span, level int, first, last bool) error {
 		// 	txt = strings.ReplaceAll(txt, "\n", LineBreakElement+"\n")
 		// }
 		// txt, o.width = encodeLineBreaks(txt, level, o.Indentation, last, o.width)
-		return o.Emit(txt, level)
-	}
-
-	if tag, ok := styleTags[span.Style]; ok {
-		if err := o.Emit("<"+tag+">", level); err != nil {
+		if err := o.Emit(txt, level); err != nil {
 			return err
 		}
-
+	} else {
 		for _, child := range span.Children {
 			if err := o.writeSpan(child, level, false, false); err != nil {
 				return err
 			}
 		}
+	}
 
+	if ok {
 		if err := o.Emit("</"+tag+">", level); err != nil {
 			return err
 		}
 
-		return nil
 	}
 
-	return fmt.Errorf("Unknown span: %s", span.String())
+	return nil
 }
 
 func simpleWriteSpan(o io.StringWriter, span Span, first, last bool) error {
