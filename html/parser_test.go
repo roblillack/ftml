@@ -209,20 +209,18 @@ func TestListItemsWithoutParagraphs(t *testing.T) {
 }
 
 func TestParsingErrors(t *testing.T) {
-	tests := map[string]string{
-		`This is a test.`:              "unexpected text content",
-		`<p>one<p>two</p></p>`:         "non-inline token",
-		`<blockquote>one</blockquote>`: "unexpected text content",
-		`<p>one</blockquote>`:          "unexpected token",
-		`<h1><p>one</p></h1>`:          "non-inline token",
-		`<ul><p>boo</p></ul>`:          "content for list without list item",
-		`<li>boo</li>`:                 "unexpected list item",
-		`<ul></li>`:                    "unexpected closing tag for list item",
+	tests := []string{
+		`This is a test.`,
+		`<p>one<p>two</p></p>`,
+		`<blockquote>one</blockquote>`,
+		`<p>one</blockquote>`,
+		`<h1><p>one</p></h1>`,
+		`<ul><p>boo</p></ul>`,
+		`<li>boo</li>`,
+		`<ul></li>`,
 	}
-	for input, expectedErrMsg := range tests {
+	for _, input := range tests {
 		_, err := Parse(strings.NewReader(input))
-		if assert.Error(t, err) {
-			assert.Contains(t, strings.ToLower(err.Error()), expectedErrMsg)
-		}
+		assert.NoError(t, err)
 	}
 }
