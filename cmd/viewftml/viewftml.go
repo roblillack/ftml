@@ -38,6 +38,7 @@ func createReader(inputFile string) (bool, io.ReadCloser, error) {
 
 func main() {
 	disableANSI := flag.Bool("n", false, "Disable use of ANSI escape sequences.")
+	saveFTML := flag.Bool("s", false, "Save the formatted FTML to standard out.")
 	flag.Parse()
 
 	if len(flag.Args()) != 1 {
@@ -62,6 +63,13 @@ func main() {
 	}
 	if err := f.Close(); err != nil {
 		Errorf("Unable to close %s after reading: %s", inputFile, err)
+	}
+
+	if *saveFTML {
+		if err := ftml.Write(os.Stdout, doc); err != nil {
+			Errorf("Unable to write FTML document: %s", err)
+		}
+		return
 	}
 
 	if err := formatter.Write(os.Stdout, doc, !*disableANSI); err != nil {
