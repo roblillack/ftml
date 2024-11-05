@@ -1,7 +1,6 @@
 package html
 
 import (
-	"log"
 	"strings"
 	"testing"
 
@@ -74,7 +73,10 @@ func TestParsingParagraphsWithExtraTags(t *testing.T) {
 	for input, d := range tests {
 		res, err := Parse(strings.NewReader(input))
 		if assert.NoError(t, err) {
-			assert.Equal(t, d, res)
+			buf := &strings.Builder{}
+			assert.NoError(t, ftml.Write(buf, res))
+			result := strings.TrimSpace(buf.String())
+			assert.Equal(t, d, res, "input: %s\nresult: %s\n", input, result)
 		}
 	}
 }
@@ -114,7 +116,6 @@ func TestParsingAndWritingStyles(t *testing.T) {
 	}
 
 	check := func(input string, doc *ftml.Document) {
-		log.Printf("Running tests for “%s” ...\n", strings.TrimSpace(input))
 		parsedDoc, err := Parse(strings.NewReader(input))
 		assert.NoErrorf(t, err, "unable to parse input string: %s", input)
 		assert.Equalf(t, doc, parsedDoc, "string parsed incorrectly: %s", input)

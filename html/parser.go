@@ -42,7 +42,7 @@ func (p *parser) down(paraType ftml.ParagraphType) (*ftml.Paragraph, error) {
 				// really know what the standard says, but we're pretty much
 				// in uncharted territory here, as this will not be supported
 				// by FTML. My current solution is to make up an entry.
-				parent.Entries = [][]*ftml.Paragraph{[]*ftml.Paragraph{}}
+				parent.Entries = [][]*ftml.Paragraph{{}}
 				pos = 0
 			}
 			parent.Entries[pos] = append(parent.Entries[pos], para)
@@ -68,14 +68,14 @@ func (p *parser) readParagraph(paraType ftml.ParagraphType, endTag string) error
 	if err != nil {
 		return err
 	}
-	if paraType == ftml.QuoteParagraph {
+	if len(content) > 0 && paraType == ftml.QuoteParagraph {
 		txtPara, err := p.down(ftml.TextParagraph)
 		if err != nil {
 			return err
 		}
 		txtPara.Content = content
 		p.up(ftml.QuoteParagraph)
-	} else {
+	} else if len(content) > 0 && paraType == ftml.TextParagraph || paraType == ftml.Header1Paragraph || paraType == ftml.Header2Paragraph || paraType == ftml.Header3Paragraph {
 		para.Content = content
 	}
 
@@ -410,7 +410,7 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType)
 
 		st, ok := inlineElements[t.Name()]
 		if !ok {
-			// return res.Close(), fmt.Errorf("non-inline token: %v", token)
+			// return res.Close(), nil, fmt.Errorf("non-inline token: %v", token)
 			st = ftml.StyleNone
 		}
 
