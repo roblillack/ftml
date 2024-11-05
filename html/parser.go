@@ -63,7 +63,16 @@ func (p *parser) readParagraph(paraType ftml.ParagraphType, endTag string) error
 	if err != nil {
 		return err
 	}
-	para.Content = content
+	if paraType == ftml.QuoteParagraph {
+		txtPara, err := p.down(ftml.TextParagraph)
+		if err != nil {
+			return err
+		}
+		txtPara.Content = content
+		p.up(ftml.QuoteParagraph)
+	} else {
+		para.Content = content
+	}
 
 	if extraToken != nil {
 		// TODO: Might get a little recursive here, implement method of

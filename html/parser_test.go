@@ -208,6 +208,19 @@ func TestListItemsWithoutParagraphs(t *testing.T) {
 	}
 }
 
+func TestBlockquoteWithoutParagraph(t *testing.T) {
+	input := `<blockquote>Hello World`
+	expected := "<blockquote>\n  <p>Hello World</p>\n</blockquote>"
+	res, err := Parse(strings.NewReader(input))
+	if assert.NoError(t, err) {
+		buf := &strings.Builder{}
+		assert.NoError(t, ftml.Write(buf, res))
+		result := strings.TrimSpace(buf.String())
+		assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
+
+	}
+}
+
 func TestParsingErrors(t *testing.T) {
 	tests := []string{
 		`This is a test.`,
