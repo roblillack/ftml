@@ -1,4 +1,4 @@
-package html
+package html_test
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 
 	"github.com/roblillack/ftml"
 	"github.com/roblillack/ftml/formatter"
+	"github.com/roblillack/ftml/html"
 )
 
 func CompareDoc(t *testing.T, doc *ftml.Document, snapshotFile string) {
@@ -71,11 +72,33 @@ func TestImportingFiles(t *testing.T) {
 			t.Fatal(err)
 		}
 		defer f.Close()
-		doc, err := Parse(f)
+		doc, err := html.Parse(f)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		CompareDoc(t, doc, strings.TrimSuffix(testdoc, filepath.Ext(testdoc))+".txt")
+	}
+}
+
+func TestParsingFTML(t *testing.T) {
+	// If FTML is strictly a subset of HTML, then the existing FTML files ovbiously
+	// should be parsable as HTML, too.
+	_, filename, _, _ := runtime.Caller(0)
+
+	testdocs, err := filepath.Glob(filepath.Join(filepath.Dir(filename), "..", "examples", "*.ftml"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, testdoc := range testdocs {
+		f, err := os.Open(testdoc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer f.Close()
+		if _, err := html.Parse(f); err != nil {
+			t.Fatalf("Unable to parse %s as HTML file: %s", filepath.Base(testdoc), err)
+		}
 	}
 }
