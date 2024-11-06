@@ -47,5 +47,7 @@ var blockLevelElements = map[string]struct{}{
 	"ol":         {},
 	"hr":         {},
 	"div":        {},
+	"tr":         {},
+	"table":      {},
 	"li":         {},
 }
