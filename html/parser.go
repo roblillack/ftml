@@ -74,7 +74,7 @@ func (p *parser) readParagraph(paraType ftml.ParagraphType, endTag string, start
 			return err
 		}
 		txtPara.Content = content
-		p.up(ftml.QuoteParagraph)
+		p.up(ftml.TextParagraph)
 	} else if len(content) > 0 && paraType == ftml.TextParagraph || paraType == ftml.Header1Paragraph || paraType == ftml.Header2Paragraph || paraType == ftml.Header3Paragraph {
 		para.Content = content
 	}
