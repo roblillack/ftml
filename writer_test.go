@@ -2,7 +2,6 @@ package ftml
 
 import (
 	"bytes"
-	"log"
 	"strings"
 	"testing"
 
@@ -35,7 +34,6 @@ func TestSimpleStyles(t *testing.T) {
 	}
 
 	for str, spans := range tests {
-		log.Printf("Running tests for “%s” ...\n", strings.TrimSpace(str))
 		buf := &strings.Builder{}
 		dbg := &strings.Builder{}
 		mock := &output{Writer: buf, MaxWidth: 1000}
@@ -57,8 +55,6 @@ func TestWriteSpaces(t *testing.T) {
 	}
 
 	for str, spans := range tests {
-		log.Printf("Running tests for “%s” ...\n", strings.TrimSpace(str))
-
 		buf := &bytes.Buffer{}
 		if assert.NoError(t, Write(buf, doc(p_(spans...)))) {
 			assert.Equal(t, str, buf.String())

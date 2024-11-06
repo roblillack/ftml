@@ -1,7 +1,6 @@
 package ftml
 
 import (
-	"log"
 	"strings"
 	"testing"
 
@@ -75,7 +74,6 @@ func TestParsingAndWritingStyles(t *testing.T) {
 	}
 
 	check := func(input string, doc *Document, output string) {
-		log.Printf("Running tests for “%s” ...\n", strings.TrimSpace(input))
 		parsedDoc, err := Parse(strings.NewReader(input))
 		assert.NoErrorf(t, err, "unable to parse input string: %s", input)
 		assert.Equalf(t, doc, parsedDoc, "string parsed incorrectly: %s", input)
