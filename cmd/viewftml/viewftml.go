@@ -42,7 +42,7 @@ func main() {
 	flag.Parse()
 
 	if len(flag.Args()) != 1 {
-		Errorf("Syntax: viewftml [-n] INPUT")
+		Errorf("Syntax: viewftml [-n] [-s] INPUT")
 	}
 
 	inputFile := flag.Arg(0)
