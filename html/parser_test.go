@@ -139,8 +139,8 @@ func TestParsingInlineStyles(t *testing.T) {
 	}
 
 	for input, expected := range tests {
-		z := gockl.New(input + "</END>")
-		spans, nextPara, err := readContent(z, "END", ftml.TextParagraph, "")
+		p := &parser{Tokenizer: gockl.New(input + "</END>")}
+		spans, nextPara, err := p.readContent("END", ftml.TextParagraph, "")
 		assert.Empty(t, nextPara)
 		if assert.NoError(t, err) {
 			assert.Equal(t, spans, expected)

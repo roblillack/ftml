@@ -64,7 +64,7 @@ func (p *parser) readParagraph(paraType ftml.ParagraphType, endTag string, start
 		return err
 	}
 
-	content, extraToken, err := readContent(p.Tokenizer, endTag, paraType, startText)
+	content, extraToken, err := p.readContent(endTag, paraType, startText)
 	if err != nil {
 		return err
 	}
@@ -110,11 +110,13 @@ func (p *parser) parent() *ftml.Paragraph {
 	return p.Breadcrumbs[len(p.Breadcrumbs)-1]
 }
 
-func (p *parser) ProcessToken(token gockl.Token) error {
+func (p *parser) processSkippedTags(token gockl.Token) bool {
 	if len(p.SkipStack) > 0 {
 		if t, ok := token.(gockl.StartElementToken); ok {
 			p.SkipStack = append(p.SkipStack, t.Name())
-		} else if t, ok := token.(gockl.EndElementToken); ok {
+		}
+
+		if t, ok := token.(gockl.EndElementToken); ok {
 			for i := len(p.SkipStack) - 1; i >= 0; i-- {
 				if p.SkipStack[i] == t.Name() {
 					p.SkipStack = p.SkipStack[0:i]
@@ -122,15 +124,30 @@ func (p *parser) ProcessToken(token gockl.Token) error {
 				}
 			}
 		}
-		return nil
+
+		return true
 	}
 
 	if t, ok := token.(gockl.StartElementToken); ok {
 		if _, ok := skipTags[t.Name()]; ok {
 			p.SkipStack = append(p.SkipStack, t.Name())
-			return nil
+			return true
 		}
+	} else if t, ok := token.(gockl.EmptyElementToken); ok {
+		if _, ok := skipTags[t.Name()]; ok {
+			return true
+		}
+	}
 
+	return false
+}
+
+func (p *parser) ProcessToken(token gockl.Token) error {
+	if processed := p.processSkippedTags(token); processed {
+		return nil
+	}
+
+	if t, ok := token.(gockl.StartElementToken); ok {
 		if t.Name() == "li" {
 			parent := p.parent()
 			if parent == nil {
@@ -191,17 +208,21 @@ func collapseWhitespace(s string, first, last bool) string {
 	return space.ReplaceAllString(s, " ")
 }
 
-func readText(z *gockl.Tokenizer) (string, gockl.Token, error) {
+func (p *parser) readText() (string, gockl.Token, error) {
 	res := ""
 
 	for {
-		token, err := z.Next()
+		token, err := p.Tokenizer.Next()
 		if err != nil || token == nil {
 			if err == io.EOF {
 				// err = io.ErrUnexpectedEOF
 				err = nil
 			}
 			return res, token, err
+		}
+
+		if processed := p.processSkippedTags(token); processed {
+			continue
 		}
 
 		if t, ok := token.(gockl.TextToken); ok {
@@ -212,11 +233,11 @@ func readText(z *gockl.Tokenizer) (string, gockl.Token, error) {
 	}
 }
 
-func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, endTag string, currentPara ftml.ParagraphType) (ftml.Span, error) {
+func (p *parser) readSpan(style ftml.InlineStyle, endTag string, currentPara ftml.ParagraphType) (ftml.Span, error) {
 	res := ftml.Span{Style: style, Children: []ftml.Span{}}
 
 	for {
-		str, token, err := readText(z)
+		str, token, err := p.readText()
 		if err != nil {
 			return res, err
 		}
@@ -243,7 +264,7 @@ func readSpan(z *gockl.Tokenizer, style ftml.InlineStyle, endTag string, current
 			if !ok {
 				st = ftml.StyleNone
 			}
-			span, err := readSpan(z, st, t.Name(), currentPara)
+			span, err := p.readSpan(st, t.Name(), currentPara)
 			if err != nil {
 				return res, err
 			}
@@ -356,7 +377,7 @@ func (b *bufferedSpanList) Close() []ftml.Span {
 	return b.Spans
 }
 
-func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType, startText string) ([]ftml.Span, gockl.Token, error) {
+func (p *parser) readContent(endTag string, paraType ftml.ParagraphType, startText string) ([]ftml.Span, gockl.Token, error) {
 	res := newBufferedSpanList()
 
 	if startText != "" {
@@ -364,7 +385,7 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType,
 	}
 
 	for {
-		str, token, err := readText(z)
+		str, token, err := p.readText()
 		if str != "" {
 			res.AddText(str)
 		}
@@ -404,7 +425,7 @@ func readContent(z *gockl.Tokenizer, endTag string, paraType ftml.ParagraphType,
 			continue
 		}
 
-		span, err := readSpan(z, st, t.Name(), paraType)
+		span, err := p.readSpan(st, t.Name(), paraType)
 		if err != nil {
 			return res.Close(), nil, err
 		}
