@@ -49,6 +49,14 @@ type Span struct {
 	Children   []Span
 }
 
+func (s *Span) EndsWithLineBreak() bool {
+	if l := len(s.Children); l > 0 {
+		return s.Children[l-1].EndsWithLineBreak()
+	}
+
+	return len(s.Text) > 0 && s.Text[len(s.Text)-1] == '\n'
+}
+
 func (s *Span) Width() int {
 	l := utf8.RuneCountInString(s.Text)
 	for _, i := range s.Children {

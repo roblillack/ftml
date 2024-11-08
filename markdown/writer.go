@@ -30,8 +30,17 @@ func writeSpan(w io.Writer, span ftml.Span) error {
 	}
 
 	if span.Style == ftml.StyleNone && len(span.Children) == 0 {
-		if _, err := io.WriteString(w, span.Text); err != nil {
-			return err
+		if span.EndsWithLineBreak() {
+			if _, err := io.WriteString(w, strings.TrimRight(span.Text, " \n")); err != nil {
+				return err
+			}
+			if _, err := io.WriteString(w, "\\\n"); err != nil {
+				return err
+			}
+		} else {
+			if _, err := io.WriteString(w, span.Text); err != nil {
+				return err
+			}
 		}
 	} else {
 		for _, child := range span.Children {
@@ -94,11 +103,6 @@ func writeParagraph(w io.Writer, p *ftml.Paragraph, linePrefix string, followPre
 		}
 
 		for _, c := range p.Content {
-			if c.Text == "\n" {
-				if _, err := io.WriteString(w, " \\\n"+prefix); err != nil {
-					return err
-				}
-			}
 			if err := writeSpan(w, c); err != nil {
 				return err
 			}

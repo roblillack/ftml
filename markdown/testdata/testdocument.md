@@ -66,8 +66,7 @@ FTML supports nesting of paragraphs, so this is entirely possible:
 > 
 > - This bullet points contains another quote:
 >   
->   > You can never have enough nesting of paragraphs. \
-
+>   > You can never have enough nesting of paragraphs.\
    —Robert Lillack
 > 
 > - 1.  One
@@ -94,28 +93,22 @@ FTML supports nesting of paragraphs, so this is entirely possible:
 
 ## Whitespace and line-break handling
 
-This is a line with a hard line-break: \
-
-First line \
-
+This is a line with a hard line-break:\
+First line\
 Second line.
 
-This is a line with multiple line-breaks: \
-
-First line \
-
- \
-
+This is a line with multiple line-breaks:\
+First line\
+\
 Second line.
 
-This is a line with multiple spaces: \
-
+This is a line with multiple spaces:\
 A   B
 
-> This is a paragraph that contains a very long line of <mark>highlighted text to force the formatter to break
- the
- line
- in the middle.</mark> But afterwards, of course, things should continue normally.
+> This is a paragraph that contains a very long line of <mark>highlighted text to force the formatter to break\
+the\
+line\
+in the middle.</mark> But afterwards, of course, things should continue normally.
 
 ## Unicode support
 

@@ -149,6 +149,7 @@ func readText(z *gockl.Tokenizer) (string, gockl.Token, error) {
 
 func readSpan(z *gockl.Tokenizer, style InlineStyle) (Span, error) {
 	res := Span{Style: style, Children: []Span{}}
+	first := false
 
 	for {
 		str, token, err := readText(z)
@@ -158,13 +159,18 @@ func readSpan(z *gockl.Tokenizer, style InlineStyle) (Span, error) {
 		if token == nil {
 			return res, fmt.Errorf("no closing tag for %s", style)
 		}
-		str = decodeEntities(collapseWhitespace(str, false, false))
+		str = decodeEntities(collapseWhitespace(str, first, false))
 		if str != "" {
 			res.Children = append(res.Children, Span{Text: str})
 		}
 
-		if t, ok := token.(gockl.EmptyElementToken); ok && t.Name() == LineBreakElementName {
-			res.Children = append(res.Children, Span{Text: "\n"})
+		if t, ok := token.(gockl.StartOrEmptyElementToken); ok && t.Name() == LineBreakElementName {
+			if l := len(res.Children); l > 0 && len(res.Children[l-1].Children) == 0 {
+				res.Children[l-1].Text += "\n"
+			} else {
+				res.Children = append(res.Children, Span{Text: "\n"})
+			}
+			first = true
 			continue
 		}
 
@@ -259,7 +265,7 @@ func (b *bufferedSpanList) AddLineBreak() {
 
 func (b *bufferedSpanList) Add(span Span) {
 	b.flush()
-	b.First = false
+	b.First = span.EndsWithLineBreak()
 	b.TrimEnd = false
 	b.Spans = append(b.Spans, span)
 }

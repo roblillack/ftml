@@ -14,7 +14,7 @@ func TestParsingSimpleParagraphs(t *testing.T) {
 		`<p>one</p><p>two</p>`:                                doc(p__("one"), p__("two")),
 		`<blockquote><p>one</p></blockquote><p>two</p>`:       doc(quote_(p__("one")), p__("two")),
 		`<p><b>Bold</b> text.</p>`:                            doc(p_(b__("Bold"), span(" text."))),
-		`<p><b>Bold<br />text.</b></p>`:                       doc(p_(b_(span("Bold"), span("\n"), span("text.")))),
+		`<p><b>Bold<br />text.</b></p>`:                       doc(p_(b_(span("Bold\n"), span("text.")))),
 		`<p>Test <b>bold</b></p>`:                             doc(p_(span("Test "), b__("bold"))),
 		`<h1> Hello World! </h1>`:                             doc(h1_("Hello World!")),
 		`<p>A<br/> B</p>`:                                     doc(p_(span("A"), span("\n"), span("B"))),
@@ -58,6 +58,30 @@ func TestTrimmingWhiteSpace(t *testing.T) {
 		assert.Equal(t, scenario.After, trimWhiteSpace(scenario.Before))
 	}
 
+}
+
+func TestParsingHardNewlines(t *testing.T) {
+	d, err := Parse(strings.NewReader(`<p>
+    This is a paragraph that contains a very long line of <b>highlighted text
+    to force the formatter to break<br />
+    the<br />
+    line<br />
+	in the middle.</b> But afterwards, of course, things should continue
+    normally.
+  </p>`))
+
+	assert.NoError(t, err)
+
+	assert.Equal(t, doc(p_(
+		span("This is a paragraph that contains a very long line of "),
+		b_(
+			span("highlighted text to force the formatter to break\n"),
+			span("the\n"),
+			span("line\n"),
+			span("in the middle."),
+		),
+		span(" But afterwards, of course, things should continue normally."),
+	)), d)
 }
 
 func TestParsingAndWritingStyles(t *testing.T) {
