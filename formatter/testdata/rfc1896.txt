@@ -196,12 +196,12 @@ which text is displayed, but not to alter the indentation or
 justification state of the text:
 
  • Bold
-   causes the affected text to be in a bold font. Nested bold commands have
-   the same effect as a single bold command.
+   causes the affected text to be in a bold font. Nested bold commands
+   have the same effect as a single bold command.
 
  • Italic
-   causes the affected text to be in an italic font. Nested italic commands
-   have the same effect as a single italic command.
+   causes the affected text to be in an italic font. Nested italic
+   commands have the same effect as a single italic command.
 
  • Underline
    causes the affected text to be underlined. Nested underline commands
@@ -254,18 +254,18 @@ justification state of the text:
    command takes precedence.
 
  • Smaller
-   causes the affected text to be in a smaller font. It is recommended that
-   the font size be changed by two points, but other amounts may be more
-   appropriate in some environments. Nested smaller commands produce
-   ever smaller fonts, to the limits of the implementation's capacity to
-   reasonably display them, after which further smaller commands have no
-   incremental effect.
+   causes the affected text to be in a smaller font. It is recommended
+   that the font size be changed by two points, but other amounts may be
+   more appropriate in some environments. Nested smaller commands
+   produce ever smaller fonts, to the limits of the implementation's
+   capacity to reasonably display them, after which further smaller
+   commands have no incremental effect.
 
  • Bigger
-   causes the affected text to be in a bigger font. It is recommended that
-   the font size be changed by two points, but other amounts may be more
-   appropriate in some environments. Nested bigger commands produce ever
-   bigger fonts, to the limits of the implementation's capacity to
+   causes the affected text to be in a bigger font. It is recommended
+   that the font size be changed by two points, but other amounts may be
+   more appropriate in some environments. Nested bigger commands produce
+   ever bigger fonts, to the limits of the implementation's capacity to
    reasonably display them, after which further bigger commands have no
    incremental effect.
 
@@ -309,5 +309,5 @@ line is begun.
    margin.
 
  • FlushBoth
-   causes the affected text to be filled and padded so as to create smooth
-   left and right margins, i.e., to be fully justified.
+   causes the affected text to be filled and padded so as to create
+   smooth left and right margins, i.e., to be fully justified.

@@ -45,6 +45,7 @@ var ansiFormatting = FormattingStyle{
 
 func DefaultFormattingStyle() FormattingStyle {
 	return FormattingStyle{
+		// No reset or style escape sequences defined ==> just bare text
 		QuotePrefix:             DefaultQuotePrefix,
 		UnorderedListItemPrefix: DefaultUnorderedListItemPrefix,
 	}
@@ -52,9 +53,9 @@ func DefaultFormattingStyle() FormattingStyle {
 
 type Formatter struct {
 	WrapWidth int
-	writer    io.Writer
 	Style     FormattingStyle
 
+	writer             io.Writer
 	currentLineSpacing int
 }
 
@@ -143,7 +144,7 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 				if _, err := f.EmitLineBreak(followPrefix, currentStyles); err != nil {
 					return 0, err
 				}
-				length = 0
+				length = len([]rune(followPrefix))
 				pos++
 				continue
 			}
