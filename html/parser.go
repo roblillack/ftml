@@ -236,13 +236,14 @@ func (p *parser) readText() (string, gockl.Token, error) {
 
 func (p *parser) readSpan(style ftml.InlineStyle, endTag string, currentPara ftml.ParagraphType) (ftml.Span, error) {
 	res := ftml.Span{Style: style, Children: []ftml.Span{}}
+	first := false
 
 	for {
 		str, token, err := p.readText()
 		if err != nil {
 			return res, err
 		}
-		str = html.UnescapeString(collapseWhitespace(str, false, false))
+		str = html.UnescapeString(collapseWhitespace(str, first, false))
 		if str != "" {
 			res.Children = append(res.Children, ftml.Span{Text: str})
 		}
@@ -252,7 +253,12 @@ func (p *parser) readSpan(style ftml.InlineStyle, endTag string, currentPara ftm
 		}
 
 		if t, ok := token.(gockl.StartOrEmptyElementToken); ok && t.Name() == LineBreakElementName {
-			res.Children = append(res.Children, ftml.Span{Text: "\n"})
+			if l := len(res.Children); l > 0 && len(res.Children[l-1].Children) == 0 {
+				res.Children[l-1].Text += "\n"
+			} else {
+				res.Children = append(res.Children, ftml.Span{Text: "\n"})
+			}
+			first = true
 			continue
 		}
 
