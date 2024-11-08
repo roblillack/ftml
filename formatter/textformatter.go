@@ -9,46 +9,97 @@ import (
 	"github.com/roblillack/ftml"
 )
 
-type Breadcrumbs []ftml.ParagraphType
+const DefaultWrapWidth = 72
+const DefaultQuotePrefix = "| "
+const DefaultUnorderedListItemPrefix = " • "
+
+type FormattingStyle struct {
+	ResetStyles             string
+	TextStyles              map[ftml.InlineStyle]StyleTags
+	EscapeText              func(string) string
+	QuotePrefix             string
+	UnorderedListItemPrefix string
+	LeftPadding             int
+}
+
+type StyleTags struct {
+	B string
+	E string
+}
+
+// As per ECMA-48, 5th edition:
+// https://www.ecma-international.org/wp-content/uploads/ECMA-48_5th_edition_june_1991.pdf
+var ansiFormatting = FormattingStyle{
+	ResetStyles: "\033[0m",
+	TextStyles: map[ftml.InlineStyle]StyleTags{
+		ftml.StyleBold:      {"\033[1m", "\033[22m"},
+		ftml.StyleItalic:    {"\033[3m", "\033[23m"},
+		ftml.StyleHighlight: {"\033[7m", "\033[27m"},
+		ftml.StyleUnderline: {"\033[4m", "\033[24m"},
+		// ftml.StyleCode:      {"", ""},
+		ftml.StyleStrike: {"\033[9m", "\033[29m"},
+	},
+	QuotePrefix:             DefaultQuotePrefix,
+	UnorderedListItemPrefix: DefaultUnorderedListItemPrefix,
+}
+
+func DefaultFormattingStyle() FormattingStyle {
+	return FormattingStyle{
+		QuotePrefix:             DefaultQuotePrefix,
+		UnorderedListItemPrefix: DefaultUnorderedListItemPrefix,
+	}
+}
 
 type Formatter struct {
-	Document *ftml.Document
-	Writer   io.Writer
-	ANSI     bool
+	WrapWidth int
+	writer    io.Writer
+	Style     FormattingStyle
 
 	currentLineSpacing int
 }
 
-func Write(w io.Writer, d *ftml.Document, ansiCodes bool) error {
-	f := &Formatter{
-		Writer:   w,
-		Document: d,
-		ANSI:     ansiCodes,
+func New(w io.Writer, f FormattingStyle, wrapWidth int) *Formatter {
+	return &Formatter{
+		writer:    w,
+		Style:     f,
+		WrapWidth: wrapWidth,
 	}
-
-	return f.WriteParagraphs(d.Paragraphs, "", "")
 }
 
-const WrapWidth = 72
-
-// As per ECMA-48, 5th edition:
-// https://www.ecma-international.org/wp-content/uploads/ECMA-48_5th_edition_june_1991.pdf
-var styleTags = map[ftml.InlineStyle]struct{ B, E string }{
-	ftml.StyleBold:      {"\033[1m", "\033[22m"},
-	ftml.StyleItalic:    {"\033[3m", "\033[23m"},
-	ftml.StyleHighlight: {"\033[7m", "\033[27m"},
-	ftml.StyleUnderline: {"\033[4m", "\033[24m"},
-	ftml.StyleCode:      {"", ""},
-	ftml.StyleStrike:    {"\033[9m", "\033[29m"},
+func NewASCII(w io.Writer) *Formatter {
+	return New(w, FormattingStyle{
+		QuotePrefix:             DefaultQuotePrefix,
+		UnorderedListItemPrefix: DefaultUnorderedListItemPrefix,
+	}, DefaultWrapWidth)
 }
 
-const resetAllModes = "\033[0m"
+func NewANSI(w io.Writer) *Formatter {
+	return New(w, ansiFormatting, DefaultWrapWidth)
+}
+
+func (f *Formatter) WriteRaw(s string) error {
+	_, err := io.WriteString(f.writer, s)
+	return err
+}
+
+func (f *Formatter) WriteString(s string) error {
+	if f.Style.EscapeText != nil {
+		s = f.Style.EscapeText(s)
+	}
+	_, err := io.WriteString(f.writer, s)
+	return err
+}
+
+func (f *Formatter) WriteDocument(d *ftml.Document) error {
+	indent := strings.Repeat(" ", f.Style.LeftPadding)
+	return f.WriteParagraphs(d.Paragraphs, indent, indent)
+}
 
 func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix string) (int, error) {
 	l := span.Width()
 
-	for i := math.Floor(float64(WrapWidth-len(followPrefix))/2 - float64(l)/2); i > 0; i-- {
-		if _, err := io.WriteString(f.Writer, " "); err != nil {
+	for i := math.Floor(float64(f.WrapWidth-len(followPrefix))/2 - float64(l)/2); i > 0; i-- {
+		if _, err := io.WriteString(f.writer, " "); err != nil {
 			return length, err
 		}
 		length++
@@ -59,17 +110,17 @@ func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix strin
 
 func (f *Formatter) EmitLineBreak(followPrefix string, currentStyles StyleSet) (int, error) {
 	modes := currentStyles.All()
-	if f.ANSI && len(modes) > 0 {
-		if _, err := io.WriteString(f.Writer, resetAllModes); err != nil {
+	if len(modes) > 0 {
+		if err := f.WriteRaw(f.Style.ResetStyles); err != nil {
 			return 0, err
 		}
 	}
-	if _, err := io.WriteString(f.Writer, "\n"+followPrefix); err != nil {
+	if err := f.WriteRaw("\n" + followPrefix); err != nil {
 		return 0, err
 	}
-	if f.ANSI && len(modes) > 0 {
+	if len(modes) > 0 {
 		for _, i := range modes {
-			if _, err := io.WriteString(f.Writer, styleTags[i].B); err != nil {
+			if err := f.WriteRaw(f.Style.TextStyles[i].B); err != nil {
 				return 0, err
 			}
 		}
@@ -79,10 +130,10 @@ func (f *Formatter) EmitLineBreak(followPrefix string, currentStyles StyleSet) (
 
 func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, outerStyles StyleSet) (int, error) {
 	currentStyles := outerStyles.Add(span.Style)
-	tag := styleTags[span.Style]
-	if f.ANSI && tag.B != "" {
-		if _, err := io.WriteString(f.Writer, tag.B); err != nil {
-			return length, err
+	tag := f.Style.TextStyles[span.Style]
+	if tag.B != "" {
+		if err := f.WriteRaw(tag.B); err != nil {
+			return 0, err
 		}
 	}
 
@@ -108,10 +159,10 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 				length++
 				pos++
 			}
-			if pos >= len(span.Text) && length < WrapWidth {
+			if pos >= len(span.Text) && length < f.WrapWidth {
 				// ok span ends here and we might put some further word on the line
 				// in a later wrap? write the space out ...
-				if _, err := io.WriteString(f.Writer, whitespace.String()); err != nil {
+				if err := f.WriteRaw(whitespace.String()); err != nil {
 					return length, err
 				}
 				break
@@ -124,7 +175,7 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 
 			word := span.Text[pos : pos+nextWs]
 			wordLen := len([]rune(word))
-			if length+wordLen > WrapWidth {
+			if length+wordLen > f.WrapWidth {
 				if l, err := f.EmitLineBreak(followPrefix, currentStyles); err != nil {
 					return 0, err
 				} else {
@@ -133,10 +184,10 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 				whitespace.Reset()
 			}
 
-			if _, err := io.WriteString(f.Writer, whitespace.String()); err != nil {
+			if err := f.WriteRaw(whitespace.String()); err != nil {
 				return length, err
 			}
-			if _, err := io.WriteString(f.Writer, word); err != nil {
+			if err := f.WriteString(word); err != nil {
 				return length, err
 			}
 			length += wordLen
@@ -146,14 +197,14 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 		for _, child := range span.Children {
 			l, err := f.WriteSpan(child, length, followPrefix, currentStyles)
 			if err != nil {
-				return length, err
+				return 0, err
 			}
 			length = l
 		}
 	}
 
-	if f.ANSI && tag.E != "" {
-		if _, err := io.WriteString(f.Writer, tag.E); err != nil {
+	if tag.E != "" {
+		if err := f.WriteRaw(tag.E); err != nil {
 			return length, err
 		}
 	}
@@ -164,7 +215,7 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 func (f *Formatter) WriteParagraphs(paragraphs []*ftml.Paragraph, linePrefix, followPrefix string) error {
 	for idx, c := range paragraphs {
 		if idx > 0 {
-			if _, err := io.WriteString(f.Writer, followPrefix+"\n"); err != nil {
+			if err := f.WriteRaw(followPrefix + "\n"); err != nil {
 				return err
 			}
 		}
@@ -187,7 +238,7 @@ func pad(s string, l int) string {
 
 func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followPrefix string) error {
 	if p.Leaf() {
-		if _, err := io.WriteString(f.Writer, linePrefix); err != nil {
+		if err := f.WriteRaw(linePrefix); err != nil {
 			return err
 		}
 
@@ -223,12 +274,12 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 		f.currentLineSpacing = 0
 
 		for i := 0; i < prev; i++ {
-			if _, err := io.WriteString(f.Writer, "\n"+followPrefix); err != nil {
+			if err := f.WriteRaw("\n" + followPrefix); err != nil {
 				return err
 			}
 		}
 
-		if _, err := io.WriteString(f.Writer, prefix); err != nil {
+		if err := f.WriteRaw(prefix); err != nil {
 			return err
 		}
 		length += len([]rune(prefix))
@@ -254,7 +305,7 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 			length = l
 		}
 
-		if _, err := io.WriteString(f.Writer, "\n"); err != nil {
+		if err := f.WriteRaw("\n"); err != nil {
 			return err
 		}
 
@@ -264,23 +315,23 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 				l += i.Width()
 			}
 
-			if _, err := io.WriteString(f.Writer, followPrefix); err != nil {
+			if err := f.WriteRaw(followPrefix); err != nil {
 				return err
 			}
 
 			for i := 0; i < l; i++ {
-				if _, err := io.WriteString(f.Writer, underlineChar); err != nil {
+				if err := f.WriteRaw(underlineChar); err != nil {
 					return err
 				}
 			}
 
-			if _, err := io.WriteString(f.Writer, "\n"); err != nil {
+			if err := f.WriteRaw("\n"); err != nil {
 				return err
 			}
 		}
 
 		for i := 0; i < next; i++ {
-			if _, err := io.WriteString(f.Writer, followPrefix+"\n"); err != nil {
+			if err := f.WriteRaw(followPrefix + "\n"); err != nil {
 				return err
 			}
 		}
@@ -292,11 +343,11 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 	if p.Type == ftml.UnorderedListParagraph {
 		for idx, entry := range p.Entries {
 			if idx > 0 {
-				if _, err := io.WriteString(f.Writer, followPrefix+"\n"); err != nil {
+				if err := f.WriteRaw(followPrefix + "\n"); err != nil {
 					return err
 				}
 			}
-			if err := f.WriteParagraphs(entry, linePrefix+" • ", followPrefix+"   "); err != nil {
+			if err := f.WriteParagraphs(entry, linePrefix+f.Style.UnorderedListItemPrefix, followPrefix+strings.Repeat(" ", len([]rune(f.Style.UnorderedListItemPrefix)))); err != nil {
 				return err
 			}
 			linePrefix = followPrefix
@@ -310,7 +361,7 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 
 		for idx, entry := range p.Entries {
 			if idx > 0 {
-				if _, err := io.WriteString(f.Writer, followPrefix+"\n"); err != nil {
+				if err := f.WriteRaw(followPrefix + "\n"); err != nil {
 					return err
 				}
 			}
@@ -324,7 +375,7 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 	}
 
 	if p.Type == ftml.QuoteParagraph {
-		if err := f.WriteParagraphs(p.Children, linePrefix+"| ", followPrefix+"| "); err != nil {
+		if err := f.WriteParagraphs(p.Children, linePrefix+f.Style.QuotePrefix, followPrefix+f.Style.QuotePrefix); err != nil {
 			return err
 		}
 

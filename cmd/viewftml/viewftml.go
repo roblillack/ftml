@@ -4,10 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,6 +37,26 @@ func createReader(inputFile string) (bool, io.ReadCloser, error) {
 	expectHTML := strings.ToLower(filepath.Ext(inputFile)) != ".ftml"
 	r, err := os.Open(inputFile)
 	return expectHTML, r, err
+}
+
+func terminalWidth(defaultWidth int) int {
+	cmd := exec.Command("stty", "size")
+	cmd.Stdin = os.Stdin
+	out, err := cmd.Output()
+	if err != nil {
+		log.Println(err)
+		return defaultWidth
+	}
+
+	s := string(out)
+	s = strings.TrimSpace(s)
+	sArr := strings.Split(s, " ")
+	width, err := strconv.Atoi(sArr[1])
+	if err != nil {
+		log.Println(err)
+		return defaultWidth
+	}
+	return width
 }
 
 func main() {
@@ -72,7 +95,27 @@ func main() {
 		return
 	}
 
-	if err := formatter.Write(os.Stdout, doc, !*disableANSI); err != nil {
+	var enc *formatter.Formatter
+	if *disableANSI {
+		enc = formatter.NewASCII(os.Stdout)
+	} else {
+		enc = formatter.NewANSI(os.Stdout)
+	}
+
+	w := terminalWidth(80)
+	if w < 60 {
+		enc.WrapWidth = w
+		enc.Style.LeftPadding = 0
+	} else if w < 100 {
+		enc.WrapWidth = w - 2
+		enc.Style.LeftPadding = 2
+	} else {
+		padding := (w-100)/2 + 4
+		enc.WrapWidth = w - padding
+		enc.Style.LeftPadding = padding
+	}
+
+	if err := enc.WriteDocument(doc); err != nil {
 		Errorf("Unable to write document to: %s", err)
 	}
 }

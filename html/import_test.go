@@ -17,7 +17,7 @@ import (
 func CompareDoc(t *testing.T, doc *ftml.Document, snapshotFile string) {
 	// We'll compare the actual marshalled FTML docs in the future I guess
 	buf := &bytes.Buffer{}
-	if err := formatter.Write(buf, doc, false); err != nil {
+	if err := formatter.NewASCII(buf).WriteDocument(doc); err != nil {
 		t.Fatal(err)
 	}
 	actual := buf.Bytes()

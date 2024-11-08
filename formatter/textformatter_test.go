@@ -37,7 +37,7 @@ func TestHardNewlines(t *testing.T) {
 			},
 		}
 		buf := &bytes.Buffer{}
-		if assert.NoError(t, Write(buf, &inputDoc, false)) {
+		if assert.NoError(t, NewASCII(buf).WriteDocument(&inputDoc)) {
 			assert.Equal(t, testCase.output, buf.String(), "Output incorrect for input: %+q", testCase.input)
 		}
 	}
@@ -55,7 +55,7 @@ And this is the second one.
 `
 
 	buf := &bytes.Buffer{}
-	if assert.NoError(t, Write(buf, doc, false)) {
+	if assert.NoError(t, NewASCII(buf).WriteDocument(doc)) {
 		assert.Equal(t, res, buf.String())
 	}
 }
@@ -78,7 +78,7 @@ func TestWordWrap(t *testing.T) {
 		"another.\n"
 	//   ------------ 72 characters --------------------------------------------^
 	buf := &bytes.Buffer{}
-	if assert.NoError(t, Write(buf, doc, false)) {
+	if assert.NoError(t, NewASCII(buf).WriteDocument(doc)) {
 		assert.Equal(t, res, buf.String())
 	}
 }
