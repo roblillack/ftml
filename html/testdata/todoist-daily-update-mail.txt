@@ -45,7 +45,7 @@ Deine Nutzung
 
 Todoist-Tipp des Tages
 
-[Android] Todoist unterstützt eine Schnelleinstellungs-Kachel für 
+[Android] Todoist unterstützt eine Schnelleinstellungs-Kachel für
 „Aufgabe hinzufügen“.
 
 So funktioniert das Einrichten 
@@ -53,7 +53,7 @@ So funktioniert das Einrichten
 Team-Aufgaben managen leicht gemacht
 
 Vergiss deine komplexe Teamarbeits-Software.
-Schließe dich über 50.000 Teams an, die bereits auf Todoist umgestiegen 
+Schließe dich über 50.000 Teams an, die bereits auf Todoist umgestiegen
 sind.
 
 Vereinfache deine Teamarbeit 
@@ -62,5 +62,5 @@ Inspiration Hub   |   Apps herunterladen   |   Help Center
 
 Abbestellen
 
-© Doist Inc. 2100 Geng Road, Suite 210 Palo Alto, CA 94303 Vereinigte 
+© Doist Inc. 2100 Geng Road, Suite 210 Palo Alto, CA 94303 Vereinigte
 Staaten

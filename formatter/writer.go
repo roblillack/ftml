@@ -97,17 +97,23 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 				continue
 			}
 
+			// we keep the whitespace, because we might need to disregard it in
+			// case we need to wrap the line
+			whitespace := strings.Builder{}
 			for ws := pos; ws < len(span.Text); ws++ {
 				if !strings.ContainsRune(" \t\n", rune(span.Text[ws])) {
 					break
 				}
-				if _, err := io.WriteString(f.Writer, string(span.Text[ws])); err != nil {
-					return length, err
-				}
+				whitespace.WriteByte(span.Text[ws])
 				length++
 				pos++
 			}
-			if pos >= len(span.Text) {
+			if pos >= len(span.Text) && length < WrapWidth {
+				// ok span ends here and we might put some further word on the line
+				// in a later wrap? write the space out ...
+				if _, err := io.WriteString(f.Writer, whitespace.String()); err != nil {
+					return length, err
+				}
 				break
 			}
 
@@ -124,8 +130,12 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 				} else {
 					length = l
 				}
+				whitespace.Reset()
 			}
 
+			if _, err := io.WriteString(f.Writer, whitespace.String()); err != nil {
+				return length, err
+			}
 			if _, err := io.WriteString(f.Writer, word); err != nil {
 				return length, err
 			}

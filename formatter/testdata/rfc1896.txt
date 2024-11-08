@@ -9,8 +9,8 @@ Status of this Memo
 ===================
 
 
-This memo provides information for the Internet community. This memo 
-does not specify an Internet standard of any kind. Distribution of this 
+This memo provides information for the Internet community. This memo
+does not specify an Internet standard of any kind. Distribution of this
 memo is unlimited.
 
 
@@ -19,15 +19,15 @@ Abstract
 ========
 
 
-MIME [RFC-1521] defines a format and general framework for the 
-representation of a wide variety of data types in Internet mail. This 
-document defines one particular type of MIME data, the text/enriched 
-MIME type. The text/enriched MIME type is intended to facilitate the 
-wider interoperation of simple enriched text across a wide variety of 
-hardware and software platforms. This document is only a minor revision 
-to the text/enriched MIME type that was first described in [RFC-1523] 
-and [RFC-1563], and is only intended to be used in the short term until 
-other MIME types for text formatting in Internet mail are developed and 
+MIME [RFC-1521] defines a format and general framework for the
+representation of a wide variety of data types in Internet mail. This
+document defines one particular type of MIME data, the text/enriched
+MIME type. The text/enriched MIME type is intended to facilitate the
+wider interoperation of simple enriched text across a wide variety of
+hardware and software platforms. This document is only a minor revision
+to the text/enriched MIME type that was first described in [RFC-1523]
+and [RFC-1563], and is only intended to be used in the short term until
+other MIME types for text formatting in Internet mail are developed and
 deployed.
 
 
@@ -36,50 +36,50 @@ The text/enriched MIME type
 ===========================
 
 
-In order to promote the wider interoperability of simple formatted text, 
-this document defines an extremely simple subtype of the MIME 
-content-type "text", the "text/enriched" subtype. The content-type line 
-for this type may have one optional parameter, the "charset" parameter, 
+In order to promote the wider interoperability of simple formatted text,
+this document defines an extremely simple subtype of the MIME
+content-type "text", the "text/enriched" subtype. The content-type line
+for this type may have one optional parameter, the "charset" parameter,
 with the same values permitted for the "text/plain" MIME content-type.
 
 The text/enriched subtype was designed to meet the following criteria:
 
-1. The syntax must be extremely simple to parse, so that even 
-   teletype-oriented mail systems can easily strip away the formatting 
+1. The syntax must be extremely simple to parse, so that even
+   teletype-oriented mail systems can easily strip away the formatting
    information and leave only the readable text.
 
-2. The syntax must be extensible to allow for new formatting commands 
+2. The syntax must be extensible to allow for new formatting commands
    that are deemed essential for some application.
 
-3. If the character set in use is ASCII or an 8-bit ASCII superset, then 
-   the raw form of the data must be readable enough to be largely 
-   unobjectionable in the event that it is displayed on the screen of 
+3. If the character set in use is ASCII or an 8-bit ASCII superset, then
+   the raw form of the data must be readable enough to be largely
+   unobjectionable in the event that it is displayed on the screen of
    the user of a non-MIME-conformant mail reader.
 
-4. The capabilities must be extremely limited, to ensure that it can 
-   represent no more than is likely to be representable by the user's 
-   primary word processor. While this limits what can be sent, it 
+4. The capabilities must be extremely limited, to ensure that it can
+   represent no more than is likely to be representable by the user's
+   primary word processor. While this limits what can be sent, it
    increases the likelihood that what is sent can be properly displayed.
 
-There are other text formatting standards which meet some of these 
-criteria. In particular, HTML and SGML have come into widespread use on 
-the Internet. However, there are two important reasons that this 
-document further promotes the use of text/enriched in Internet mail over 
+There are other text formatting standards which meet some of these
+criteria. In particular, HTML and SGML have come into widespread use on
+the Internet. However, there are two important reasons that this
+document further promotes the use of text/enriched in Internet mail over
 other such standards:
 
-1. Most MIME-aware Internet mail applications are already able to either 
-   properly format text/enriched mail or, at the very least, are able to 
-   strip out the formatting commands and display the readable text. The 
+1. Most MIME-aware Internet mail applications are already able to either
+   properly format text/enriched mail or, at the very least, are able to
+   strip out the formatting commands and display the readable text. The
    same is not true for HTML or SGML.
 
-2. The current RFC on HTML [RFC-1866] and Internet Drafts on SGML have 
-   many features which are not necessary for Internet mail, and are 
+2. The current RFC on HTML [RFC-1866] and Internet Drafts on SGML have
+   many features which are not necessary for Internet mail, and are
    missing a few capabilities that text/enriched already has.
 
-For these reasons, this document is promoting the use of text/enriched 
-until other Internet standards come into more widespread use. For those 
-who will want to use HTML, Appendix B of this document contains a very 
-simple C program that converts text/enriched to HTML 2.0 described in 
+For these reasons, this document is promoting the use of text/enriched
+until other Internet standards come into more widespread use. For those
+who will want to use HTML, Appendix B of this document contains a very
+simple C program that converts text/enriched to HTML 2.0 described in
 [RFC-1866].
 
 
@@ -88,26 +88,26 @@ Syntax
 ======
 
 
-The syntax of "text/enriched" is very simple. It represents text in a 
-single character set--US-ASCII by default, although a different 
-character set can be specified by the use of the "charset" parameter. 
-(The semantics of text/enriched in non-ASCII character sets are 
-discussed later in this document.) All characters represent themselves, 
-with the exception of the "<" character (ASCII 60), which is used to 
-mark the beginning of a formatting command. A literal less-than sign 
+The syntax of "text/enriched" is very simple. It represents text in a
+single character set--US-ASCII by default, although a different
+character set can be specified by the use of the "charset" parameter.
+(The semantics of text/enriched in non-ASCII character sets are
+discussed later in this document.) All characters represent themselves,
+with the exception of the "<" character (ASCII 60), which is used to
+mark the beginning of a formatting command. A literal less-than sign
 ("<") can be represented by a sequence of two such characters, "<<".
 
-Formatting instructions consist of formatting commands surrounded by 
-angle brackets ("<>", ASCII 60 and 62). Each formatting command may be 
-no more than 60 characters in length, all in US-ASCII, restricted to the 
-alphanumeric and hyphen ("-") characters. Formatting commands may be 
-preceded by a solidus ("/", ASCII 47), making them negations, and such 
-negations must always exist to balance the initial opening commands. 
-Thus, if the formatting command "<bold>" appears at some point, there 
-must later be a "</bold>" to balance it. (NOTE: The 60 character limit 
-on formatting commands does NOT include the "<", ">", or "/" characters 
-that might be attached to such commands.) Formatting commands are always 
-case-insensitive. That is, "bold" and "BoLd" are equivalent in effect, 
+Formatting instructions consist of formatting commands surrounded by
+angle brackets ("<>", ASCII 60 and 62). Each formatting command may be
+no more than 60 characters in length, all in US-ASCII, restricted to the
+alphanumeric and hyphen ("-") characters. Formatting commands may be
+preceded by a solidus ("/", ASCII 47), making them negations, and such
+negations must always exist to balance the initial opening commands.
+Thus, if the formatting command "<bold>" appears at some point, there
+must later be a "</bold>" to balance it. (NOTE: The 60 character limit
+on formatting commands does NOT include the "<", ">", or "/" characters
+that might be attached to such commands.) Formatting commands are always
+case-insensitive. That is, "bold" and "BoLd" are equivalent in effect,
 if not in good taste.
 
 
@@ -116,16 +116,16 @@ Line break rules
 ================
 
 
-Line breaks (CRLF pairs in standard network representation) are handled 
-specially. In particular, isolated CRLF pairs are translated into a 
-single SPACE character. Sequences of N consecutive CRLF pairs, however, 
-are translated into N-1 actual line breaks. This permits long lines of 
-data to be represented in a natural looking manner despite the frequency 
-of line-wrapping in Internet mailers. When preparing the data for mail 
-transport, isolated line breaks should be inserted wherever necessary to 
-keep each line shorter than 80 characters. When preparing such data for 
-presentation to the user, isolated line breaks should be replaced by a 
-single SPACE character, and N consecutive CRLF pairs should be presented 
+Line breaks (CRLF pairs in standard network representation) are handled
+specially. In particular, isolated CRLF pairs are translated into a
+single SPACE character. Sequences of N consecutive CRLF pairs, however,
+are translated into N-1 actual line breaks. This permits long lines of
+data to be represented in a natural looking manner despite the frequency
+of line-wrapping in Internet mailers. When preparing the data for mail
+transport, isolated line breaks should be inserted wherever necessary to
+keep each line shorter than 80 characters. When preparing such data for
+presentation to the user, isolated line breaks should be replaced by a
+single SPACE character, and N consecutive CRLF pairs should be presented
 to the user as N-1 line breaks.
 
 Thus text/enriched data that looks like this:
@@ -148,7 +148,7 @@ should be displayed by a text/enriched interpreter as follows:
 | 
 | This is the next section.
 
-The formatting commands, not all of which will be implemented by all 
+The formatting commands, not all of which will be implemented by all
 implementations, are described in the following sections.
 
 
@@ -157,79 +157,79 @@ Formatting Commands
 ===================
 
 
-The text/enriched formatting commands all begin with <commandname> and 
-end with </commandname>, affecting the formatting of the text between 
-those two tokens. The commands are described here, grouped according to 
+The text/enriched formatting commands all begin with <commandname> and
+end with </commandname>, affecting the formatting of the text between
+those two tokens. The commands are described here, grouped according to
 type.
 
 
 Parameter Command
 -----------------
 
-Some of the formatting commands may require one or more associated 
-parameters. The "param" command is a special formatting command used to 
+Some of the formatting commands may require one or more associated
+parameters. The "param" command is a special formatting command used to
 include these parameters.
 
  • Param
-   Marks the affected text as command parameters, to be interpreted or 
-   ignored by the text/enriched interpreter, but not to be shown to the 
-   reader. The "param" command always immediately follows some other 
-   formatting command, and the parameter data indicates some additional 
-   information about the formatting that is to be done. The syntax of 
-   the parameter data (whatever appears between the initial "<param>" 
-   and the terminating "</param>") is defined for each command that uses 
-   it. However, it is always required that the format of such data must 
-   not contain nested "param" commands, and either must not use the "<" 
-   character or must use it in a way that is compatible with 
-   text/enriched parsing. That is, the end of the parameter data should 
-   be recognizable with either of two algorithms: simply searching for 
-   the first occurrence of "</param>" or parsing until a balanced 
-   "</param>" command is found. In either case, however, the parameter 
+   Marks the affected text as command parameters, to be interpreted or
+   ignored by the text/enriched interpreter, but not to be shown to the
+   reader. The "param" command always immediately follows some other
+   formatting command, and the parameter data indicates some additional
+   information about the formatting that is to be done. The syntax of
+   the parameter data (whatever appears between the initial "<param>"
+   and the terminating "</param>") is defined for each command that uses
+   it. However, it is always required that the format of such data must
+   not contain nested "param" commands, and either must not use the "<"
+   character or must use it in a way that is compatible with
+   text/enriched parsing. That is, the end of the parameter data should
+   be recognizable with either of two algorithms: simply searching for
+   the first occurrence of "</param>" or parsing until a balanced
+   "</param>" command is found. In either case, however, the parameter
    data should not be shown to the human reader.
 
 
 Font-Alteration Commands
 ------------------------
 
-The following formatting commands are intended to alter the font in 
-which text is displayed, but not to alter the indentation or 
+The following formatting commands are intended to alter the font in
+which text is displayed, but not to alter the indentation or
 justification state of the text:
 
  • Bold
-   causes the affected text to be in a bold font. Nested bold commands have 
+   causes the affected text to be in a bold font. Nested bold commands have
    the same effect as a single bold command.
 
  • Italic
-   causes the affected text to be in an italic font. Nested italic commands 
+   causes the affected text to be in an italic font. Nested italic commands
    have the same effect as a single italic command.
 
  • Underline
-   causes the affected text to be underlined. Nested underline commands 
+   causes the affected text to be underlined. Nested underline commands
    have the same effect as a single underline command.
 
  • Fixed
-   causes the affected text to be in a fixed width font. Nested fixed 
+   causes the affected text to be in a fixed width font. Nested fixed
    commands have the same effect as a single fixed command.
 
  • FontFamily
-   causes the affected text to be displayed in a specified typeface. The 
-   "fontfamily" command requires a parameter that is specified by using 
-   the "param" command. The parameter data is a case-insensitive string 
-   containing the name of a font family. Any currently available font 
-   family name (e.g. Times, Palatino, Courier, etc.) may be used. This 
-   includes font families defined by commercial type foundries such as 
-   Adobe, BitStream, or any other such foundry. Note that 
-   implementations should only use the general font family name, not the 
-   specific font name (e.g. use "Times", not "TimesRoman" nor 
-   "TimesBoldItalic"). When nested, the inner "fontfamily" command takes 
-   precedence. Also note that the "fontfamily" command is advisory only; 
-   it should not be expected that other implementations will honor the 
-   typeface information in this command since the font capabilities of 
+   causes the affected text to be displayed in a specified typeface. The
+   "fontfamily" command requires a parameter that is specified by using
+   the "param" command. The parameter data is a case-insensitive string
+   containing the name of a font family. Any currently available font
+   family name (e.g. Times, Palatino, Courier, etc.) may be used. This
+   includes font families defined by commercial type foundries such as
+   Adobe, BitStream, or any other such foundry. Note that
+   implementations should only use the general font family name, not the
+   specific font name (e.g. use "Times", not "TimesRoman" nor
+   "TimesBoldItalic"). When nested, the inner "fontfamily" command takes
+   precedence. Also note that the "fontfamily" command is advisory only;
+   it should not be expected that other implementations will honor the
+   typeface information in this command since the font capabilities of
    systems vary drastically.
 
  • Color
-   causes the affected text to be displayed in a specified color. The 
-   "color" command requires a parameter that is specified by using the 
+   causes the affected text to be displayed in a specified color. The
+   "color" command requires a parameter that is specified by using the
    "param" command. The parameter data can be one of the following:
    
    | red
@@ -245,69 +245,69 @@ justification state of the text:
    
    | ####,####,####
    
-   where '#' is a hexadecimal digit '0' through '9', 'A' through 'F', or 
-   'a' through 'f'. The three 4-digit hexadecimal values are the RGB 
-   values for red, green, and blue respectively, where each component is 
-   expressed as an unsigned value between 0 (0000) and 65535 (FFFF). The 
-   default color for the message is unspecified, though black is a 
-   common choice in many environments. When nested, the inner "color" 
+   where '#' is a hexadecimal digit '0' through '9', 'A' through 'F', or
+   'a' through 'f'. The three 4-digit hexadecimal values are the RGB
+   values for red, green, and blue respectively, where each component is
+   expressed as an unsigned value between 0 (0000) and 65535 (FFFF). The
+   default color for the message is unspecified, though black is a
+   common choice in many environments. When nested, the inner "color"
    command takes precedence.
 
  • Smaller
-   causes the affected text to be in a smaller font. It is recommended that 
-   the font size be changed by two points, but other amounts may be more 
-   appropriate in some environments. Nested smaller commands produce 
-   ever smaller fonts, to the limits of the implementation's capacity to 
-   reasonably display them, after which further smaller commands have no 
+   causes the affected text to be in a smaller font. It is recommended that
+   the font size be changed by two points, but other amounts may be more
+   appropriate in some environments. Nested smaller commands produce
+   ever smaller fonts, to the limits of the implementation's capacity to
+   reasonably display them, after which further smaller commands have no
    incremental effect.
 
  • Bigger
-   causes the affected text to be in a bigger font. It is recommended that 
-   the font size be changed by two points, but other amounts may be more 
-   appropriate in some environments. Nested bigger commands produce ever 
-   bigger fonts, to the limits of the implementation's capacity to 
-   reasonably display them, after which further bigger commands have no 
+   causes the affected text to be in a bigger font. It is recommended that
+   the font size be changed by two points, but other amounts may be more
+   appropriate in some environments. Nested bigger commands produce ever
+   bigger fonts, to the limits of the implementation's capacity to
+   reasonably display them, after which further bigger commands have no
    incremental effect.
 
-While the "bigger" and "smaller" operators are effectively inverses, it 
-is not recommended, for example, that "<smaller>" be used to end the 
+While the "bigger" and "smaller" operators are effectively inverses, it
+is not recommended, for example, that "<smaller>" be used to end the
 effect of "<bigger>". This is properly done with "</bigger>".
 
-Since the capabilities of implementations will vary, it is to be 
-expected that some implementations will not be able to act on some of 
-the font-alteration commands. However, an implementation should still 
-display the text to the user in a reasonable fashion. In particular, the 
-lack of capability to display a particular font family, color, or other 
-text attribute does not mean that an implementation should fail to 
+Since the capabilities of implementations will vary, it is to be
+expected that some implementations will not be able to act on some of
+the font-alteration commands. However, an implementation should still
+display the text to the user in a reasonable fashion. In particular, the
+lack of capability to display a particular font family, color, or other
+text attribute does not mean that an implementation should fail to
 display text.
 
 
 Fill/Justification/Indentation Commands
 ---------------------------------------
 
-Initially, text/enriched text is intended to be displayed fully filled 
-(that is, using the rules specified for replacing CRLF pairs with spaces 
-or removing them as appropriate) with appropriate kerning and 
-letter-tracking, and using the maximum available margins as suits the 
+Initially, text/enriched text is intended to be displayed fully filled
+(that is, using the rules specified for replacing CRLF pairs with spaces
+or removing them as appropriate) with appropriate kerning and
+letter-tracking, and using the maximum available margins as suits the
 capabilities of the receiving user agent software.
 
-The following commands alter that state. Each of these commands force a 
-line break before and after the formatting environment if there is not 
-otherwise a line break. For example, if one of these commands occurs 
-anywhere other than the beginning of a line of text as presented, a new 
+The following commands alter that state. Each of these commands force a
+line break before and after the formatting environment if there is not
+otherwise a line break. For example, if one of these commands occurs
+anywhere other than the beginning of a line of text as presented, a new
 line is begun.
 
  • Center
    causes the affected text to be centered.
 
  • FlushLeft
-   causes the affected text to be left-justified with a ragged right 
+   causes the affected text to be left-justified with a ragged right
    margin.
 
  • FlushRight
-   causes the affected text to be right-justified with a ragged left 
+   causes the affected text to be right-justified with a ragged left
    margin.
 
  • FlushBoth
-   causes the affected text to be filled and padded so as to create smooth 
+   causes the affected text to be filled and padded so as to create smooth
    left and right margins, i.e., to be fully justified.
