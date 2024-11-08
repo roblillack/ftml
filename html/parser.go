@@ -68,7 +68,9 @@ func (p *parser) readParagraph(paraType ftml.ParagraphType, endTag string, start
 	if err != nil {
 		return err
 	}
-	if len(content) > 0 && paraType == ftml.QuoteParagraph {
+	if paraType == ftml.QuoteParagraph &&
+		(len(content) > 1 ||
+			len(content) == 1 && (len(content[0].Children) > 0 || strings.TrimSpace(content[0].Text) != "")) {
 		txtPara, err := p.down(ftml.TextParagraph)
 		if err != nil {
 			return err
@@ -215,7 +217,6 @@ func (p *parser) readText() (string, gockl.Token, error) {
 		token, err := p.Tokenizer.Next()
 		if err != nil || token == nil {
 			if err == io.EOF {
-				// err = io.ErrUnexpectedEOF
 				err = nil
 			}
 			return res, token, err
@@ -288,43 +289,6 @@ func (p *parser) readSpan(style ftml.InlineStyle, endTag string, currentPara ftm
 	}
 }
 
-func trimWhiteSpace(spans []ftml.Span) []ftml.Span {
-	res := spans
-
-	for idx, i := range res {
-		if i.Style != ftml.StyleNone {
-			continue
-		}
-		txt := strings.TrimLeftFunc(i.Text, unicode.IsSpace)
-		if txt == "" {
-			n := append([]ftml.Span{}, res[0:idx]...)
-			res = append(n, res[idx+1:]...)
-		} else if txt != i.Text {
-			i.Text = txt
-			res[idx] = i
-		}
-		break
-	}
-
-	for idx := len(res) - 1; idx >= 0; idx-- {
-		i := res[idx]
-		if i.Style != ftml.StyleNone {
-			continue
-		}
-		txt := strings.TrimRightFunc(i.Text, unicode.IsSpace)
-		if txt == "" {
-			n := append([]ftml.Span{}, res[0:idx]...)
-			res = append(n, res[idx+1:]...)
-		} else if txt != i.Text {
-			i.Text = txt
-			res[idx] = i
-		}
-		break
-	}
-
-	return res
-}
-
 type bufferedSpanList struct {
 	Spans   []ftml.Span
 	First   bool
@@ -360,7 +324,8 @@ func (b *bufferedSpanList) AddLineBreak() {
 
 func (b *bufferedSpanList) Add(span ftml.Span) {
 	b.flush()
-	b.First = false
+	b.First = span.EndsWithLineBreak()
+	// b.First = false
 	b.TrimEnd = false
 	b.Spans = append(b.Spans, span)
 }

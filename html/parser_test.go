@@ -81,24 +81,6 @@ func TestParsingParagraphsWithExtraTags(t *testing.T) {
 	}
 }
 
-func TestTrimmingWhiteSpace(t *testing.T) {
-	type Scenario struct {
-		Before []ftml.Span
-		After  []ftml.Span
-	}
-	for _, scenario := range []Scenario{
-		{Before: []ftml.Span{}, After: []ftml.Span{}},
-		{Before: []ftml.Span{span("test")}, After: []ftml.Span{span("test")}},
-		{Before: []ftml.Span{span(" test")}, After: []ftml.Span{span("test")}},
-		{Before: []ftml.Span{span("test ")}, After: []ftml.Span{span("test")}},
-		{Before: []ftml.Span{span(" test ")}, After: []ftml.Span{span("test")}},
-		{Before: []ftml.Span{span("\n  test, "), span("test.\n")}, After: []ftml.Span{span("test, "), span("test.")}},
-	} {
-		assert.Equal(t, scenario.After, trimWhiteSpace(scenario.Before))
-	}
-
-}
-
 func TestParsingAndWritingStyles(t *testing.T) {
 	simpleTests := map[string][]ftml.Span{
 		// TODO: Unclear if we want to keep this behavior or just convert
@@ -213,6 +195,32 @@ func TestListItemsWithoutParagraphs(t *testing.T) {
 func TestBlockquoteWithoutParagraph(t *testing.T) {
 	input := `<blockquote>Hello World`
 	expected := "<blockquote>\n  <p>Hello World</p>\n</blockquote>"
+	res, err := Parse(strings.NewReader(input))
+	if assert.NoError(t, err) {
+		buf := &strings.Builder{}
+		assert.NoError(t, ftml.Write(buf, res))
+		result := strings.TrimSpace(buf.String())
+		assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
+
+	}
+}
+
+func TestBlockquoteWithParagraphAndSpaceBefore(t *testing.T) {
+	input := "<blockquote>\n<p>\nHello World"
+	expected := "<blockquote>\n  <p>Hello World</p>\n</blockquote>"
+	res, err := Parse(strings.NewReader(input))
+	if assert.NoError(t, err) {
+		buf := &strings.Builder{}
+		assert.NoError(t, ftml.Write(buf, res))
+		result := strings.TrimSpace(buf.String())
+		assert.Equal(t, expected, result, "input:    %s\nexpected: %s\nresult:   %s\n", input, expected, result)
+
+	}
+}
+
+func TestBlockquoteWithoutParagraphButPaddedInlineElements(t *testing.T) {
+	input := "<blockquote>   <b>   Hello World"
+	expected := "<blockquote>\n  <p><b> Hello World</b></p>\n</blockquote>"
 	res, err := Parse(strings.NewReader(input))
 	if assert.NoError(t, err) {
 		buf := &strings.Builder{}
