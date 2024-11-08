@@ -9,6 +9,39 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestHardNewlines(t *testing.T) {
+	for _, testCase := range []struct {
+		input  []string
+		output string
+	}{
+		{[]string{"Line A\n", "Line B"}, "| Line A\n| Line B\n"},
+		{[]string{"Line A", "\n", "Line B"}, "| Line A\n| Line B\n"},
+		{[]string{"Line A", "\nLine B"}, "| Line A\n| Line B\n"},
+	} {
+		spans := make([]ftml.Span, len(testCase.input))
+		for idx, txt := range testCase.input {
+			spans[idx] = ftml.Span{Text: txt}
+		}
+		inputDoc := ftml.Document{
+			Paragraphs: []*ftml.Paragraph{
+				{
+					Type: ftml.QuoteParagraph,
+					Children: []*ftml.Paragraph{
+						{
+							Type:    ftml.TextParagraph,
+							Content: spans,
+						},
+					},
+				},
+			},
+		}
+		buf := &bytes.Buffer{}
+		if assert.NoError(t, Write(buf, &inputDoc, false)) {
+			assert.Equal(t, testCase.output, buf.String(), "Output incorrect for input: %+q", testCase.input)
+		}
+	}
+}
+
 func TestSimpleParagraph(t *testing.T) {
 	doc, err := ftml.Parse(strings.NewReader("<p>This is a paragraph.</p><p>And this is the second one.</p>"))
 	if err != nil {

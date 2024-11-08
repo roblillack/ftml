@@ -86,10 +86,17 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 		}
 	}
 
-	if span.Style == ftml.StyleNone && span.Text == "\n" {
-		return f.EmitLineBreak(followPrefix, currentStyles)
-	} else if span.Style == ftml.StyleNone && len(span.Children) == 0 {
+	if span.Style == ftml.StyleNone && len(span.Children) == 0 {
 		for pos := 0; pos < len(span.Text); {
+			if span.Text[pos] == '\n' {
+				if _, err := f.EmitLineBreak(followPrefix, currentStyles); err != nil {
+					return 0, err
+				}
+				length = 0
+				pos++
+				continue
+			}
+
 			for ws := pos; ws < len(span.Text); ws++ {
 				if !strings.ContainsRune(" \t\n", rune(span.Text[ws])) {
 					break
@@ -217,13 +224,6 @@ func (f *Formatter) WriteParagraph(p *ftml.Paragraph, linePrefix string, followP
 		length += len([]rune(prefix))
 
 		for _, c := range p.Content {
-			if c.Text == "\n" {
-				if _, err := io.WriteString(f.Writer, " \n"+followPrefix+prefix); err != nil {
-					return err
-				}
-				length = len([]rune(followPrefix + prefix))
-				continue
-			}
 			var l int
 			var err error
 

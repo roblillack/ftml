@@ -157,7 +157,7 @@ Concepts
 
  • System calls may only be performed from selected code regions (main 
    program, ld.so, libc.so, and sigtramp). The libc.so region is setup 
-   by msyscall(2). Theo de Raadt, November 28, 2019. 
+   by msyscall(2). Theo de Raadt, November 28, 2019.
    This mechanism was removed because later work on immutable memory + 
    pinned system calls was even better.
 
@@ -400,7 +400,7 @@ Programs and subsystems
 
  • relayd(8) with relayctl(8): Started by Pierre-Yves Ritschard and Reyk 
    Flöter. Imported December 16, 2006 and first released with OpenBSD 
-   4.1. Now maintained by Sebastian Benoit. 
+   4.1. Now maintained by Sebastian Benoit.
    
 
  • cwm(1): Started by Marius Aamodt Eriksen in 2004. Imported April 27, 

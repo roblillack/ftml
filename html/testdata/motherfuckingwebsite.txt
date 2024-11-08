@@ -108,5 +108,5 @@ saying is that all the problems we have with websites are ones we create
 ourselves. Websites aren't broken by default, they are functional, 
 high-performing, and accessible. You break them. You son-of-a-bitch.
 
-| "Good design is as little design as possible." 
+| "Good design is as little design as possible."
 | - some German motherfucker

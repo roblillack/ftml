@@ -10,6 +10,6 @@ Folder Name
 Wenn Sie keine Dateien von dieser Person erhalten möchten, blockieren 
 Sie den Absender in Drive
 
-Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA 
+Google LLC, 1600 Amphitheatre Parkway, Mountain View, CA 94043, USA
 Sie erhalten diese E-Mail, weil max@example.example eine Datei oder 
 einen Ordner in Google Drive für Sie freigegeben hat.
