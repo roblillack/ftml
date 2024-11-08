@@ -19,6 +19,7 @@ type FormattingStyle struct {
 	EscapeText              func(string) string
 	QuotePrefix             string
 	UnorderedListItemPrefix string
+	WrapWidth               int
 	LeftPadding             int
 }
 
@@ -27,55 +28,53 @@ type StyleTags struct {
 	E string
 }
 
-// As per ECMA-48, 5th edition:
-// https://www.ecma-international.org/wp-content/uploads/ECMA-48_5th_edition_june_1991.pdf
-var ansiFormatting = FormattingStyle{
-	ResetStyles: "\033[0m",
-	TextStyles: map[ftml.InlineStyle]StyleTags{
-		ftml.StyleBold:      {"\033[1m", "\033[22m"},
-		ftml.StyleItalic:    {"\033[3m", "\033[23m"},
-		ftml.StyleHighlight: {"\033[7m", "\033[27m"},
-		ftml.StyleUnderline: {"\033[4m", "\033[24m"},
-		// ftml.StyleCode:      {"", ""},
-		ftml.StyleStrike: {"\033[9m", "\033[29m"},
-	},
-	QuotePrefix:             DefaultQuotePrefix,
-	UnorderedListItemPrefix: DefaultUnorderedListItemPrefix,
-}
-
 func DefaultFormattingStyle() FormattingStyle {
 	return FormattingStyle{
 		// No reset or style escape sequences defined ==> just bare text
 		QuotePrefix:             DefaultQuotePrefix,
 		UnorderedListItemPrefix: DefaultUnorderedListItemPrefix,
+		LeftPadding:             0,
+		WrapWidth:               DefaultWrapWidth,
 	}
 }
 
 type Formatter struct {
-	WrapWidth int
-	Style     FormattingStyle
+	Style FormattingStyle
 
 	writer             io.Writer
 	currentLineSpacing int
 }
 
-func New(w io.Writer, f FormattingStyle, wrapWidth int) *Formatter {
+func New(w io.Writer, f FormattingStyle) *Formatter {
 	return &Formatter{
-		writer:    w,
-		Style:     f,
-		WrapWidth: wrapWidth,
+		writer: w,
+		Style:  f,
 	}
 }
 
 func NewASCII(w io.Writer) *Formatter {
-	return New(w, FormattingStyle{
-		QuotePrefix:             DefaultQuotePrefix,
-		UnorderedListItemPrefix: DefaultUnorderedListItemPrefix,
-	}, DefaultWrapWidth)
+	return New(w, DefaultFormattingStyle())
 }
 
 func NewANSI(w io.Writer) *Formatter {
-	return New(w, ansiFormatting, DefaultWrapWidth)
+	// As per ECMA-48, 5th edition:
+	// https://www.ecma-international.org/wp-content/uploads/ECMA-48_5th_edition_june_1991.pdf
+
+	return New(w, FormattingStyle{
+		ResetStyles: "\033[0m",
+		TextStyles: map[ftml.InlineStyle]StyleTags{
+			ftml.StyleBold:      {"\033[1m", "\033[22m"},
+			ftml.StyleItalic:    {"\033[3m", "\033[23m"},
+			ftml.StyleHighlight: {"\033[7m", "\033[27m"},
+			ftml.StyleUnderline: {"\033[4m", "\033[24m"},
+			// ftml.StyleCode:      {"", ""},
+			ftml.StyleStrike: {"\033[9m", "\033[29m"},
+		},
+		QuotePrefix:             DefaultQuotePrefix,
+		UnorderedListItemPrefix: DefaultUnorderedListItemPrefix,
+		LeftPadding:             0,
+		WrapWidth:               DefaultWrapWidth,
+	})
 }
 
 func (f *Formatter) WriteRaw(s string) error {
@@ -99,7 +98,7 @@ func (f *Formatter) WriteDocument(d *ftml.Document) error {
 func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix string) (int, error) {
 	l := span.Width()
 
-	for i := math.Floor(float64(f.WrapWidth-len(followPrefix))/2 - float64(l)/2); i > 0; i-- {
+	for i := math.Floor(float64(f.Style.WrapWidth-len(followPrefix))/2 - float64(l)/2); i > 0; i-- {
 		if _, err := io.WriteString(f.writer, " "); err != nil {
 			return length, err
 		}
@@ -160,7 +159,7 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 				length++
 				pos++
 			}
-			if pos >= len(span.Text) && length < f.WrapWidth {
+			if pos >= len(span.Text) && length < f.Style.WrapWidth {
 				// ok span ends here and we might put some further word on the line
 				// in a later wrap? write the space out ...
 				if err := f.WriteRaw(whitespace.String()); err != nil {
@@ -176,7 +175,7 @@ func (f *Formatter) WriteSpan(span ftml.Span, length int, followPrefix string, o
 
 			word := span.Text[pos : pos+nextWs]
 			wordLen := len([]rune(word))
-			if length+wordLen > f.WrapWidth {
+			if length+wordLen > f.Style.WrapWidth {
 				if l, err := f.EmitLineBreak(followPrefix, currentStyles); err != nil {
 					return 0, err
 				} else {

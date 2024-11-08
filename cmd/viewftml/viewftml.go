@@ -104,14 +104,14 @@ func main() {
 
 	w := terminalWidth(80)
 	if w < 60 {
-		enc.WrapWidth = w
+		enc.Style.WrapWidth = w
 		enc.Style.LeftPadding = 0
 	} else if w < 100 {
-		enc.WrapWidth = w - 2
+		enc.Style.WrapWidth = w - 2
 		enc.Style.LeftPadding = 2
 	} else {
 		padding := (w-100)/2 + 4
-		enc.WrapWidth = w - padding
+		enc.Style.WrapWidth = w - padding
 		enc.Style.LeftPadding = padding
 	}
 
