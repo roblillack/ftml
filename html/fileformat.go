@@ -33,6 +33,7 @@ var inlineElements = map[string]ftml.InlineStyle{
 	"em":     ftml.StyleItalic,
 	"u":      ftml.StyleUnderline,
 	"s":      ftml.StyleStrike,
+	"del":    ftml.StyleStrike,
 	"mark":   ftml.StyleHighlight,
 	"code":   ftml.StyleCode,
 }
