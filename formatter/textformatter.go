@@ -92,7 +92,15 @@ func (f *Formatter) WriteString(s string) error {
 
 func (f *Formatter) WriteDocument(d *ftml.Document) error {
 	indent := strings.Repeat(" ", f.Style.LeftPadding)
-	return f.WriteParagraphs(d.Paragraphs, indent, indent)
+	if err := f.WriteParagraphs(d.Paragraphs, indent, indent); err != nil {
+		return err
+	}
+
+	if c, ok := f.writer.(io.WriteCloser); ok {
+		return c.Close()
+	}
+
+	return nil
 }
 
 func (f *Formatter) WriteCentered(span ftml.Span, length int, followPrefix string) (int, error) {

@@ -39,6 +39,32 @@ func createReader(inputFile string) (bool, io.ReadCloser, error) {
 	return expectHTML, r, err
 }
 
+func runPager() (*exec.Cmd, io.Writer, error) {
+	cmdline := []string{"less"}
+	if pager := os.Getenv("PAGER"); pager != "" {
+		cmdline = strings.Split(pager, " ")
+	}
+
+	if cmdline[0] == "" {
+		cmdline[0] = "less"
+	}
+
+	if prog := filepath.Base(cmdline[0]); prog == "less" || prog == "more" {
+		cmdline = append(cmdline, "-R")
+	}
+
+	r, w := io.Pipe()
+	cmd := exec.Command(cmdline[0], cmdline[1:]...)
+	cmd.Stdin = r
+	cmd.Stdout = os.Stdout
+
+	if err := cmd.Start(); err != nil {
+		return nil, nil, err
+	}
+
+	return cmd, w, nil
+}
+
 func terminalWidth(defaultWidth int) int {
 	cmd := exec.Command("stty", "size")
 	cmd.Stdin = os.Stdin
@@ -95,27 +121,35 @@ func main() {
 		return
 	}
 
+	var cmd *exec.Cmd
 	var enc *formatter.Formatter
-	if *disableANSI {
+	if o, _ := os.Stdout.Stat(); (o.Mode()&os.ModeCharDevice) != os.ModeCharDevice || *disableANSI {
 		enc = formatter.NewASCII(os.Stdout)
 	} else {
-		enc = formatter.NewANSI(os.Stdout)
-	}
-
-	w := terminalWidth(80)
-	if w < 60 {
-		enc.Style.WrapWidth = w
-		enc.Style.LeftPadding = 0
-	} else if w < 100 {
-		enc.Style.WrapWidth = w - 2
-		enc.Style.LeftPadding = 2
-	} else {
-		padding := (w-100)/2 + 4
-		enc.Style.WrapWidth = w - padding
-		enc.Style.LeftPadding = padding
+		c, pager, err := runPager()
+		if err != nil {
+			Errorf("Unable to run pager: %s", err)
+		}
+		enc = formatter.NewANSI(pager)
+		if w := terminalWidth(80); w < 60 {
+			enc.Style.WrapWidth = w
+			enc.Style.LeftPadding = 0
+		} else if w < 100 {
+			enc.Style.WrapWidth = w - 2
+			enc.Style.LeftPadding = 2
+		} else {
+			padding := (w-100)/2 + 4
+			enc.Style.WrapWidth = w - padding
+			enc.Style.LeftPadding = padding
+		}
+		cmd = c
 	}
 
 	if err := enc.WriteDocument(doc); err != nil {
 		Errorf("Unable to write document to: %s", err)
+	}
+
+	if cmd != nil {
+		cmd.Wait()
 	}
 }
