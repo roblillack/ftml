@@ -1,0 +1,160 @@
+home  
+
+
+
+
+                          Zig's (.{}){} syntax
+
+
+
+Nov 05, 2024
+
+One of the first pieces of Zig code that you're likely to see, and
+write, is this beginner-unfriendly line:
+
+var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+
+While we can reason that we're creating an allocator, the (.{}){} syntax
+can seem a bit much. This is a combination of three separate language
+features: generics, anonymous struct literals and default field values.
+
+
+Generics
+--------
+
+One of Zig's more compelling feature is its advance compile-time (aka
+comptime) capabilities. This is the ability to have a subset of Zig run
+at compile-time. Comptime can be used for a number of different things,
+but the most immediately useful is to implement generic type. To create
+a generic type, we write a a function which returns a type. For example,
+if we wanted to create a linked list node, we'd do:
+
+fn Node(T: type) type { return struct { value: T, next: ?*Node(T) = null
+, }; }
+
+You could optionally (and more explicitly) specify that T is a comptime
+parameter:
+
+fn Node(comptime T: type) type { // ... }
+
+But this is redundant, because, in Zig, types always have to be known at
+compile time. Now consider these two equivalent ways to create a Node(T)
+:
+
+const IntNode = Node(i32); const n1 = IntNode{.value = 1}; const n2 = 
+Node(i32){.value = 2};
+
+Thinking of Node(i32) as a type can take a bit of getting used to, but
+once you accept that it's no different than any other struct, the 2nd
+initialization hopefully makes sense.
+
+While it's common, there's no rule that says that the parameters of a
+generic function have to be types. This is valid:
+
+fn Buffer(comptime size: usize) type { return struct { pos: usize, buf: 
+[size]u8, }; }
+
+You might do this type of thing for performance reasons - doing things
+at comptime rather than runtime, or, as we did above, to avoid dynamic
+allocation. This brings us to the 2nd part of the special syntax.
+
+
+Anonymous Struct Literals
+-------------------------
+
+Zig is good at inferring types. Given the following function:
+
+const Config = struct { port: u16, host: []const u8, }; fn connect(
+config: Config) !void { // ... }
+
+The following are all equivalent:
+
+const c1 = Config{ .port = 8000, .host = "127.0.0.1", }; try connect(c1)
+; // OR try connect(Config{ .port = 8000, .host = "127.0.0.1", }); // OR
+try connect(.{ .port = 8000, .host = "127.0.0.1", });
+
+Whenever you see this syntax .{...}, you should imagine the leading dot
+being replaced with the target type (which Zig will infer). But in the
+original GeneralPurposeAllocator line, that's not really what we were
+doing, is it? We had something more like:
+
+try connect(.{});
+
+It's the same, but relying on default field values, which is the last
+bit of magic.
+
+
+Default Field Values
+--------------------
+
+In the above example, in order to create a Config, we must specify the 
+port and host fields:
+
+const c1 = Config{.port = 8000, .host = "127.0.0.1"} // OR, from what we
+saw above, this is the same: const c1: Config = .{.port = 8000, .host = 
+"127.0.0.1"}
+
+Failure to set either (or both) fields will result in a compile-time
+error. When we declare the structure, we can give fields a default
+value. For example, we could change our Config struct to:
+
+const Config = struct { port: u16, host: []const u8 = "127.0.0.1", };
+
+Now when we create a Config, we can optionally omit the host: const c = 
+Config{.port = 8000};
+
+Which would create a Config with a port equal to 8000 and a host equal
+to "127.0.0.1". We can give every field a default value:
+
+const Config = struct { port: u16 = 8000, host: []const u8 = "127.0.0.1"
+, };
+
+Which means that we can create a Config without specifying any field:
+
+const c = Config{}; // OR const c: Config = .{};
+
+Those empty braces look a lot like the ones we used to create our
+GeneralPurposeAllocator!
+
+
+Bringing It Together
+--------------------
+
+Given what we've learned, if we look at the original line of code again:
+
+var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+
+We know that GeneralPurposeAllocator is a function that returns a type:
+it's a generic. We don't know the type of parameter it takes, but we do
+know that we're using its default parameters. We're also using defaults
+to initialize an instance of the type.
+
+If GeneralPurposeAllocator wasn't a generic, we'd have this:
+
+var gpa = std.heap.GeneralPurposeAllocator{};
+
+And we could say that we're initializing a GeneralPurposeAllocator using
+its default values. Pretty straightforward. But because 
+GeneralPurposeAllocator is a generic which takes a configuration struct,
+we end up with two sets of defaults - one which is passed to the generic
+function and creates the type, and the other that initializes the
+instance.
+
+Consider this more explicit version:
+
+const config = std.heap.GeneralPurposeAllocatorConfig{}; // Make GPA an
+alias to std.heap.GeneralPurposeAllocator(config) const GPA = std.heap.
+GeneralPurposeAllocator(config); var gpa = GPA{};
+
+And now lets inline everything:
+
+var gpa = std.heap.GeneralPurposeAllocator(std.heap.
+GeneralPurposeAllocatorConfig{}){};
+
+Finally we can let Zig infer the type:
+
+var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+
+Hopefully, that helps. I've written more about generics before and, in
+the next post, we'll talk about a new Zig feature, declaration literals,
+which improve the readability of this type of code.
