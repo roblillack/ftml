@@ -11,6 +11,7 @@ var skipTags = map[string]struct{}{
 	"title":  {},
 	"style":  {},
 	"script": {},
+	"nav":    {},
 }
 
 var paragraphElement = map[string]ftml.ParagraphType{
