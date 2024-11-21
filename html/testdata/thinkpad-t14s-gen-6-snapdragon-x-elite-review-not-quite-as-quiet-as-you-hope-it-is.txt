@@ -1,0 +1,479 @@
+roblog.
+
+ • home 
+
+ • articles 
+
+ • archive 
+
+ • tags 
+
+
+
+
+ThinkPad T14s Gen 6 (Snapdragon X Elite) review: Not quite as quiet as
+you hope it is
+
+
+
+Posted: October 20, 2024
+Last updated: November 7, 2024 
+
+
+
+TL;DR
+=====
+
+
+The ThinkPad powered by Qualcomm’s new ARM processor performs great and
+feels nice but is plagued by power management issues.
+
+
+
+Introduction
+============
+
+
+Exactly five years ago, due to work requirements, I tried switching my
+daily computer over to a Windows laptop after using macOS exclusively
+for over ten years. Frankly, it was a complete disaster: The computer
+took months to deliver and then finally arrived with a broken display.
+Because I could not wait another six weeks for a replacement computer, I
+decided to get the screen replaced using Lenovo’s “Premier” support.
+Alas, the machine needed to be shipped to the next repair center, where
+it disappeared for three weeks. Communication with the vendor was so bad
+that a colleague tasked with organizing the repair threatened “If I ever
+have to speak to these people again, I’ll quit.”
+
+When the laptop was finally repaired, things did not get better: Windows
+10 still felt sluggish, working with WSL 1 was a hit-and-miss, and the
+overall developer ecosystem left a lot to be desired. I quickly went
+back to the Mac.
+
+Yet, the X1 Carbon (Gen7) I bought at the time had a great keyboard and
+got lots of time as a machine to test all kinds of Windows software on
+and to work on our native app’s integration with PowerPoint on a regular
+basis. After all these years, Windows 11 with WSL 2 makes for a quite
+nice Linux desktop.
+
+So, with Qualcomm’s X Elite processor getting rave reviews everywhere,
+maybe Windows on ARM will finally be a thing? I bought a ThinkPad T14s
+G6 to give this a try. I’ll be comparing the machine to the X1 Carbon
+and my “daily driver” – a three-year old MacBook Pro with M1 Pro
+processor.
+
+
+
+Specifications
+==============
+
+
+The machine in question is a Lenovo ThinkPad T14s Gen 6 (Snapdragon),
+model number 21N1-CTO1WW:
+
+ • 14” WUXGA (1920x1200, 162 ppi) anti-glare, low power screen with 400
+   nits
+
+ • Architecture: ARMv8 (64-bit)
+
+ • CPU: Qualcomm “Snapdragon X Elite X1E-78-100” with 12 cores, 42 MB
+   cache, max. Frequency of 3.4 GHz
+
+ • RAM: 32 GB LPDDR5x
+
+ • GPU: Qualcomm “Adreno X1-85” (with 3.8 TFLOPS)
+
+ • NPU: Qualcomm Hexagon with 45 TOPS
+
+ • Disk: 1 TB Western Digital PC SN740 NVMe SSD
+
+ • 1080p webcam, IR camera, presence detector, fingerprint reader
+
+ • OS: Microsoft Windows 11 Pro
+
+
+
+Order process
+=============
+
+
+Like usual with Lenovo, the price on the website fluctuates daily, so if
+you’re happy with one of the pre-built configurations, get one of those
+– preferably from a local dealer.
+
+Alas, laptop keyboards nowadays are not interchangeable and to get a
+ThinkPad equipped with ANSI layout in Germany you have to order a custom
+built one. In my case, this option was around 600 Euros more than the
+comparable pre-built option sold on the website, which would have been
+delivered a day later. I gave Lenovo’s sales department a call and they
+were able to bring down the cost to nearly match the offer on the
+website. Exactly three weeks later the machine was delivered by UPS.
+
+
+
+Hardware overview
+=================
+
+
+The laptop weighs around 1.2 kilograms. You can hardly feel the weight
+difference to the X1 Carbon, which is a little more than 100 grams
+lighter, but the Mac (1.6 kg) definitely feels a bit heavier. I did not
+measure them, but the T14s has roughly the same footprint as the X1
+Carbon and the MacBook Pro, it’s just a bit thicker than both other
+laptops. This is mainly due to the way the screen is integrated into the
+case and while the laptop’s keyboard cover and case bottom seem to be of
+a soft to touch plastic material (much like the X1), the back of the
+screen feels very cheap and plasticy as it’s of a somewhat harder
+polymer. Next to the noise (see below), this might very well be the only
+downside this machine has.
+
+As usual with ThinkPads, the case is a fingerprint magnet. The overall
+build quality is very good, though, and the device delivers exactly what
+you would expect from Lenovo’s T series lineup: A sturdy, but not overly
+hefty, workhorse.
+
+The screen has a rather thin bezel on the sides, but a slightly wider
+one up top that also features a “reverse notch” which houses the webcam
+(with a closable lid and a white indicator LED), a Windows Hello IR
+camera & presence sensor, and two microphones. This notch is not
+distracting and looks fine when sitting in front of the computer but is
+a bit bulky on the back and adds to the cheap feel when the laptop is
+closed. The screen’s hinge is too tight to open it with one hand, but
+there is no noticeable wobble when typing on the keyboard. It can be
+opened completely flat, but, again, due to the screen’s thickness, the
+base of the notebook will lift slightly when doing so.
+
+On the left side of the device, there are two Thunderbolt 4 enabled
+USB-C ports, and a tiny (protruding, what the heck?) LED to indicate the
+charging status, a HDMI 2.1 port and a 3.5 mm headphone jack. On the
+right, you find a Kensington lock port and two USB-A (5 Gbps) ports. I’d
+love to have at least one additional USB-C port on the right (like with
+the MacBook Pro) and would give up one of the older Type A ports for
+this. On the bottom, next to the large air intake, a small pinhole
+indicates some kind of reset functionality that I never tried.
+
+
+
+Display
+=======
+
+
+Lenovo uses a simple, matte 16:10 WUXGA (1920x1200 pixels) IPS display
+which is not too bright. With a pixel density of only 162 ppi there are
+certainly sharper options available, but I’m pretty happy with it. It
+gets the job done and I don’t see a reason why I would want to trade it
+for a more power hungry model.
+
+
+
+Keyboard
+========
+
+
+Like the X1 Carbon, the T14s comes with a 6-row fulls-size chiclet style
+keyboard with 1.5 mm of key travel. The layout used is misleadingly
+called “English (EU)” by Lenovo and is actually the only ANSI layout
+option which can be ordered from the European Union – even if the
+computer is built to order for you in China. Lenovo sales staff usually
+does not know about the differences between ANSI and ISO layouts, so
+make sure that the order specifically says “English (EU)” not just
+“English” or “English (GB)” if this is important to you.
+
+While I do appreciate newer scissor switch keyboards on the Mac
+(compared to the butterfly ones they used before), using a ThinkPad
+keyboard after a while is always a pleasure. It’s not on the level of
+earlier T series laptops, but the T14s feels fantastic – a little more
+tactile than the X1, but equally as good.
+
+The two-stage keyboard backlight is nice and even, but still not on par
+with Apple: Too much light is emitted from underneath the keys
+(especially the function key row) which can be a bit distracting when
+working in the dark.
+
+The layout is well thought out: multiple keys contain “home dots” to
+help orient without looking at the keyboard, the page up/down keys are
+slightly chamfered so your fingers don’t accidentally slide off the
+cursor keys while using them, and the function lock, caps lock, mute,
+and microphone toggles have small indicator LEDs integrated into the
+keys. Talking about this, microphone toggles should be standard on any
+keyboard and headset by now, and I don’t know why not more vendors are
+adding this functionality.
+
+Lenovo decided to swap the Ctrl and Fn keys compared to older revisions
+and I do not think that this makes sense. Thankfully, this setting can
+be reversed in the BIOS and both keys seem to be of the exact same size,
+so I might switch them at some point. If I was granted a wish here:
+Throw away the caps lock key altogether, and move the Ctrl key into its
+place. This way there’d be a clear position for the Fn key, Space would
+be a bit wider and I’m setting up CapsLock as additional Ctrl on all my
+computers anyhow.
+
+The keyboard also contains a new “CoPilot” key or something, but
+thankfully the designers did not shrink down the space bar any further,
+but just replaced the Menu key with it.
+
+Also, the keyboard contains two screenshot buttons. One starts the
+Windows screenshot functionality (as in Windows-Shift-S), the other one
+starts “Snipping Tool” … what’s going on here?
+
+
+
+Touchpad, TrackPoint
+====================
+
+
+The glass touchpad feels nice but there’s a great difference between the
+force necessary to click it on the top versus the bottom of the area. By
+default a “natural” scrolling direction is configured. Usability of the
+trackpad is still not nearly on par with any Mac built in the past
+twenty years.
+
+The TrackPoint works perfectly fine and pairs nicely with the three
+physical buttons below. In contrast to my X1, the new one does not seem
+to drift.
+
+
+
+Webcam, microphones, speaker
+============================
+
+
+The Full HD webcam does a decent job and is the first ThinkPad webcam
+I’d use in a professional context. While the quality is still not as
+good as my simple external Logitech C920 from 2012, it is comparable to
+the camera of the MacBook Pro and this is apparently quite the
+achievement. I happen to like the image quality of the Mac’s camera way
+better but I am not sure if this is due to better optics or only because
+of a better implementation of portrait mode and studio light by Apple.
+In comparison, the X1 Carbon’s camera is so bad, you just don’t use it.
+
+The two microphones in the ThinkPad do a commendable job, but the ones
+in the Mac sound clearer and seem to have a way better noise
+cancellation: With the T14s would sometimes pick up hands moving on the
+palm rest or desk, which did not happen with the MacBook.
+
+In contrast to the X1, the T14s is only branded with “Dolby Audio”
+instead of “Dolby Atmos” – but sound quality is the same for both
+laptops. The Carbon is a tiny bit louder than the newer laptop, but both
+ThinkPads are just no match for the MacBook in terms of audio quality
+and volume.
+
+
+
+IR camera, presence sensor, fingerprint reader
+==============================================
+
+
+The “Windows Hello” login functionality seems to work very well, much
+better than on the X1. I have yet to experience an issue where the
+system would not quickly log me in automatically. Great!
+
+The presence detection system works most of the time, but seems to rush
+things a bit. Throughout the past week, it happened a few times that the
+system started to dim the screen – as if I had left the computer, even
+when I was currently typing.
+
+I did not set up the fingerprint reader (which is integrated into the
+power button), yet, and frankly do not miss it.
+
+
+
+Software / Firmware
+===================
+
+
+Some notes on the system’s firmware. This is an UEFI laptop which will
+easily support other ARM64 operating systems, like OpenBSD, once “Secure
+Boot” is disabled. It does not seem to ship with an UEFI shell, but a
+traditional BIOS-like setup. Most of the devices (camera, wireless, …)
+can individually be disabled in the there.
+
+When configuring multiboot, one must create an entry for the
+pre-installed Windows system manually, then the firmware boot manager
+can be used to switch between operating systems.
+
+The laptop is quick to wake up from sleep (on Windows) and has the
+traditional “breathing” red LED on the top to indicate sleep state.
+
+For some reason, the firmware is extremely slow (as in “it takes 10
+minutes to boot”) when a USB gigabit network adapter is connected. Not
+super annoying, but a bit frustrating, if you have a desk setup where
+you typically use wire ethernet.
+
+I did not experience any software incompatibility issues due to this
+system being ARM. WSL works fine, too.
+
+Existing x64 software was emulated seamlessly, just like I know it from
+the Mac.
+
+
+
+“AI”
+====
+
+
+The ThinkPad is a so-called “CoPilot+” computer that has a few
+“Artificial Intelligence” features powered by the system’s “Neural
+Processing Unit” which is prominently marketed by Qualcomm. Apparently,
+this chip is able to run some machine learning tasks which currently
+only is used by the webcam’s Studio effects” functionality. Based on
+which features are enabled (reframing, portrait light, portrait blue,
+etc.) the NPU will be utilized 30-50% which will make the fan spin all
+time time …
+
+I’d love to see Microsoft offer some offline LLMs to improve the
+computing experience (text, code completion, photo editing), but,
+honestly, at the moment this whole AI branding looks like a sham.
+
+
+
+Performance
+===========
+
+
+Generally, I am happy with the performance, as the system is snappy and
+there is really nothing to complain about for my specific use-case. The
+SSD delivers read and write speeds of nearly 5 GiB/s and the CPU speed
+feels on par with my MacBook Pro.
+
+I don’t really want to get into processor benchmarks and stuff like
+that, but to put my experience into numbers, I thought I’d compare the
+build time of some Vizzlo projects using hyperfine on the three
+machines. All of them were connected to the power supply during these
+tests, but I added a fourth option running the T14s on battery (with
+Energy saver mode enabled) to see what difference this would make.
+
+Go project compile time:
+
+Machine / CPUTimeFan noise
+
+T14s / Snapdragon X Elite14.138 s ± 2.114 sloud
+
+T14s (battery)29.183 s ± 3.797 sloud
+
+X1 Carbon / Core i741.225 s ± 0.850 sloud
+
+MacBook Pro / M1 Pro12.832 s ± 0.221 sno fan
+
+TypeScript web app bundling time:
+
+Machine / CPUTimeFan noise
+
+T14s / Snapdragon X Elite45.988 s ± 0.556 sloud
+
+T14s (battery)120.327 s ± 2.873 sno fan
+
+X1 Carbon / Core i7101.266 s ± 9.083 sloud
+
+MacBook Pro / M1 Pro38.112 s ± 0.514 sno fan
+
+As you can see, the T14s from 2024 is nearly able to reach the
+performance of the M1 Pro from 2021.
+
+Alas, the fan is spinning at full speed when running the benchmark while
+plugged in. The Mac was the only machine staying completely silent
+through these tests.
+
+
+
+Battery life
+============
+
+
+Seeing how I can easily get more than a full work day of battery life on
+the M1 Pro MacBook, I came to expect a lot from the ARM-powered ThinkPad
+and it surely does not disappoint – at least comparing it to Intel-based
+Windows laptops I got to work with in the past. As a battery life test,
+I used the laptop for light office tasks after disconnecting the charger
+at 100% in twelve sessions until the operating system forcibly shut it
+down. While I expected to be able to run it down to 1%, this happened
+pretty unexpectedly at 5%.
+
+During this test, Windows’ “Energy saver” mode was turned on all the
+time and the screen brightness was set to 70%. By light office tasks I
+mean this: Writing emails, some light coding, editing simple text
+documents & spreadsheets, browsing the web, joining a few short
+conference calls.
+
+As the test was stretched out over multiple days, some battery depletion
+was to be expected even when the system was not in use. Luckily,
+throughout a total of 44 hours and 23 minutes the laptop spent in
+standby mode, the battery only lost around 10% of charge.
+
+The remaining (as reported) 85% battery was enough to power the system
+through a total time of active use for 8 hours and 39 minutes. All in
+all, a great result and this laptop will not have any issue making it
+through a full working day.
+
+
+
+Heat and noise emission
+=======================
+
+
+In contrast to all other Lenovo laptops I can compare it with, this
+machine does not seem to have any coil whine. Bravo! Update 2024-11-07:
+A slight coil whine is now audible on the left side of the device while
+the laptop is charging or when a non-static image is displayed on the
+screen; i.e. when scrolling through a simple text document. What a
+bummer.
+
+When not plugged in (and especially in “Energy saver” mode) the machine
+stays completely silent and neither the keyboard nor the bottom get more
+than lukewarm, even when stressing the CPU for a minute or less.
+
+As soon as you start using the NPU or GPU though (i.e. you join a Google
+Meet call and use the system’s “Studio effects” or Meet’s own visual
+effects), the fan will start spinning and emit a constant white noise at
+viewing distance. The same happens with full CPU usage after around one
+minute, for example in the Go compilation test described above (the
+codebase including the standard library was recompiled 10 times in row).
+It’s not annoying and the machine really generally is a silent workhorse
+when on the go.
+
+All this does not matter anymore, once you start using the ThinkPad
+connected to a charger. Regardless of the chosen power mode, the fan is
+either running all the time (light coding, attending video calls) or
+constantly turns on and off (web browsing). There seems to be no power
+management setting which can force the laptop to use less energy, so it
+stays silent.
+
+The fan speed will now vary, too, so it might be faint at times, while
+at other times we are talking about a noticable hum with only 4% CPU, 0%
+GPU, 0% NPU utilization. This issue worsens while the computer is
+charging, suggesting that the thermal management of the battery system
+and CPU throttling need adjustment. Lenovo should address this in an
+upcoming firmware update.
+
+Alas, the system’s air outlet is positioned right below the screen which
+then will reflect any fan noise directly towards the user. Compare this
+with the X1’s case design where air is let out on the right, or the
+MacBook where … I don’t know where the fans are, because they are
+essentially off all the time.
+
+On Oct 17, 2024, Lenovo released a firmware update (“Lenovo Power and
+Battery Driver v10.1.10.0”) which improved the fan noise situation a bit
+– or so I want to believe. All these tests were performed after
+installing this update. So, yes, it was worse before.
+
+Edit 2024-11-04: Further updates provided by Lenovo did not improve the
+situation: “Qualcomm Integrated System Software and Firmware Package
+v1.0.0.11” (released 2024-10-31), “UEFI Bios v2.13 and ECP v1.24”
+(released 2024-10-31).
+
+
+
+Verdict
+=======
+
+
+So you’re looking for a new, light laptop to work on the road? Is the
+T14s a good deal? Hell no, get a MacBook Pro or even a MacBook Air. If
+it has to be a Windows laptop though, the ThinkPad T14s is a great
+choice, as soon as Lenovo fixes the power management issues.
+
+article    #thinkpad#arm 
+
+△
+
+©2010–2024 Robert Lillack
